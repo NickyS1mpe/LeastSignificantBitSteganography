@@ -20,7 +20,7 @@ public class LSB_Color {
         this.content = new int[image.getHeight() * image.getWidth() * 8];
     }
 
-    public int[] getContent() {
+    public int[] getColor() {
         try {
             int height = image.getHeight(), width = image.getWidth();
             content = new int[height * width * 3];
@@ -66,6 +66,10 @@ public class LSB_Color {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public int[] getContent() {
+        return content;
     }
 
     public int changeToRGB(int rgb, int st) {

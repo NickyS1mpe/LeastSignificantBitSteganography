@@ -1,6 +1,7 @@
 import Function.Decrypt;
 import Function.Encrypt;
 import Function.LSB_Color;
+import Service.mainService;
 import org.junit.jupiter.api.Test;
 
 import javax.imageio.ImageIO;
@@ -35,12 +36,9 @@ public class usage_test {
 //            } catch (IOException e) {
 //                e.printStackTrace();
 //            }
-            BufferedImage image = ImageIO.read(new File("C:\\Users\\Nick Lee\\IdeaProjects\\LSB\\src\\main\\resources\\static\\encrypt.png"));
-            LSB_Color test = new LSB_Color(image);
-            test.getContent();
-            Decrypt de = new Decrypt(test.getContent());
-            de.Decode();
-            System.out.println(de.getMes());
+//            BufferedImage image = ImageIO.read(new File("C:\\Users\\Nick Lee\\IdeaProjects\\LSB\\src\\main\\resources\\static\\encrypt.png"));
+//            new mainService().LSB_Control("w", "testLSB", "C:\\Users\\Nick Lee\\IdeaProjects\\LSB\\src\\main\\resources\\static\\logo.png", "C:\\Users\\Nick Lee\\IdeaProjects\\LSB\\src\\main\\resources\\static\\LSB.png");
+            new mainService().LSB_Control("r", "", "C:\\Users\\Nick Lee\\IdeaProjects\\LSB\\src\\main\\resources\\static\\LSB.png", "");
         } catch (Exception e) {
             e.printStackTrace();
         }
