@@ -1,9 +1,7 @@
-package Function;
+package LSB.web.Function;
 
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
 
 /**
  * @ClassName: LSB_Color
@@ -20,6 +18,12 @@ public class LSB_Color {
         this.content = new int[image.getHeight() * image.getWidth() * 8];
     }
 
+    /**
+     * @Author: Nick Lee
+     * @Description: get RGB final bit from image
+     * @Date: 2023/3/1 9:39
+     * @Return:
+     **/
     public int[] getColor() {
         try {
             int height = image.getHeight(), width = image.getWidth();
@@ -39,24 +43,6 @@ public class LSB_Color {
         return null;
     }
 
-//    public void getContent(int[] binary) {
-//        try {
-//            int height = image.getHeight(), width = image.getWidth(), x = 0, y = 7, z = 0;
-//            while (x < height && y < width) {
-//                if (z == binary.length)
-//                    break;
-//                binary[z++] = content[x * width + y];
-//                y += 8;
-//                if (y >= width) {
-//                    y = 7;
-//                    x++;
-//                }
-//            }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
-
     public void setContent(int[] binary) {
         try {
             System.arraycopy(binary, 0, content, 0, binary.length);
@@ -72,6 +58,12 @@ public class LSB_Color {
         return content;
     }
 
+    /**
+     * @Author: Nick Lee
+     * @Description: RGB transform
+     * @Date: 2023/3/1 9:38
+     * @Return:
+     **/
     public int changeToRGB(int rgb, int st) {
         rgb = content[st] == 1 ? rgb | 0x00010000 : rgb & 0XFFFEFFFF;
         rgb = content[st + 1] == 1 ? rgb | 0x00000100 : rgb & 0XFFFFFEFF;
@@ -83,6 +75,12 @@ public class LSB_Color {
         return image;
     }
 
+    /**
+     * @Author: Nick Lee
+     * @Description: set image RGB
+     * @Date: 2023/3/1 9:39
+     * @Return:
+     **/
     public void setImage() {
         int height = image.getHeight(), width = image.getWidth();
         for (int i = 0; i < height; i++) {

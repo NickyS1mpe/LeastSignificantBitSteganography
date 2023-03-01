@@ -1,0 +1,89 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>My LSB</title>
+    <style>
+        #message {
+            border: 1px solid gray;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        #left {
+            float: left;
+            width: 50%;
+            height: 100%;
+        }
+
+        #right {
+            float: left;
+            width: 50%;
+            height: 100%;
+        }
+
+        #file {
+            padding-top: 5px;
+        }
+
+        #content {
+            width: 800px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #ffffff;
+            padding: 40px;
+            padding-top: 55px;
+            -webkit-box-shadow: 0 3px 20px 3px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 3px 20px 3px rgba(0, 0, 0, 0.15);
+        }
+
+        #left_f {
+            float: left;
+            width: 50%;
+            height: 100%;
+        }
+
+        #right_f {
+            float: left;
+            width: 50%;
+            height: 100%;
+        }
+
+        #preview {
+            border: 1px solid gray;
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body onload="get()">
+<div id="Data"></div>
+<hr/>
+<div id="content">
+    <div id="main">
+        <div id="left">
+            <div style="padding-top: 10px;padding-bottom: 5px">
+                <div>
+                    <a style="padding-right: 16px">消息：</a><input id="text" type="text"
+                                                                 style="border:0;border-bottom: thin solid;"/>
+                </div>
+            </div>
+            <div id="file">
+                <form method="post" target="myIframe" action="/upload" enctype="multipart/form-data">
+                    <input type="file" name="file"/>
+                    <div style="padding-top: 10px">
+                        <input type="submit" value="上传文件"
+                               style="background-color: white;border: 1px solid gray;border-radius: 5px;width: 50%"><br>
+                    </div>
+                </form>
+                <iframe id="myIframe" name="myIframe" class="iframes" onload="getIframeContent()"
+                        style="display: none"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

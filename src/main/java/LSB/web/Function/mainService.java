@@ -1,8 +1,4 @@
-package Service;
-
-import Function.Decrypt;
-import Function.Encrypt;
-import Function.LSB_Color;
+package LSB.web.Function;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -22,7 +18,7 @@ public class mainService {
 
     /**
      * @Author: Nick Lee
-     * @Description: 读取图片
+     * @Description: read picture
      * @Date: 2023/2/27 9:49
      * @Return:
      **/
@@ -38,7 +34,7 @@ public class mainService {
 
     /**
      * @Author: Nick Lee
-     * @Description: 写入图片
+     * @Description: write picture
      * @Date: 2023/2/27 9:48
      * @Return:
      **/
@@ -55,7 +51,7 @@ public class mainService {
 
     /**
      * @Author: Nick Lee
-     * @Description: 加载Color类
+     * @Description: load class color
      * @Date: 2023/2/27 9:48
      * @Return:
      **/
@@ -66,7 +62,7 @@ public class mainService {
 
     /**
      * @Author: Nick Lee
-     * @Description: 解密消息
+     * @Description: decrypt message
      * @Date: 2023/2/27 9:48
      * @Return:
      **/
@@ -84,7 +80,7 @@ public class mainService {
 
     /**
      * @Author: Nick Lee
-     * @Description: 加密消息
+     * @Description: encrypt message
      * @Date: 2023/2/27 9:49
      * @Return:
      **/
@@ -104,7 +100,7 @@ public class mainService {
 
     /**
      * @Author: Nick Lee
-     * @Description: 主控函数
+     * @Description: main controller
      * @Date: 2023/2/27 9:49
      * @Return:
      **/

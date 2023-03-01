@@ -1,7 +1,9 @@
-package Function;
+package LSB.web.Function;
 
-import java.awt.*;
-import java.awt.image.BufferedImage;
+import org.springframework.util.Base64Utils;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 /**
  * @ClassName: Decode
@@ -33,6 +35,7 @@ public class Decrypt {
                 sb.append(c);
             }
             mes = sb.toString().trim();
+            mes = decode_Base64(mes);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -40,5 +43,22 @@ public class Decrypt {
 
     public String getMes() {
         return mes;
+    }
+
+    /**
+      * @Author: Nick Lee
+      * @Description: base64 decode
+      * @Date: 2023/3/1 9:37
+      * @Return:
+      **/
+    public String decode_Base64(String s) {
+        try {
+            byte[] bt = Base64Utils.decodeFromString(s);
+            s = new String(bt, StandardCharsets.UTF_8);
+            return s;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "";
     }
 }
