@@ -1,4 +1,8 @@
-package LSB.web.Function;
+package LSB.web.Service;
+
+import LSB.web.Model.Decrypt;
+import LSB.web.Model.Encrypt;
+import LSB.web.Model.LSB_Color;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;

@@ -1,4 +1,4 @@
-package LSB.web.Function;
+package LSB.web.Model;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;

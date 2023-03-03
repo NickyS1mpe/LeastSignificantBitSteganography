@@ -1,4 +1,4 @@
-package LSB.web.Function;
+package LSB.web.Model;
 
 import org.springframework.util.Base64Utils;
 
