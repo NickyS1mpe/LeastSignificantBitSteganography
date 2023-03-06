@@ -1,8 +1,8 @@
-package LSB.web.Service;
+package LSB.web.Function;
 
-import LSB.web.Model.Decrypt;
-import LSB.web.Model.Encrypt;
-import LSB.web.Model.LSB_Color;
+import LSB.web.Function.Decrypt;
+import LSB.web.Function.Encrypt;
+import LSB.web.Function.LSB_Color;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -10,7 +10,7 @@ import java.io.File;
 
 /**
  * @ClassName: main
- * @Description: TODO
+ * @Description: main service
  * @Author: Nick Lee
  * @Date: Create in 15:46 2023/2/22
  **/
@@ -70,11 +70,11 @@ public class mainService {
      * @Date: 2023/2/27 9:48
      * @Return:
      **/
-    public boolean Decrypt() {
+    public boolean Decrypt(String key) {
         try {
-            Decrypt decrypt = new Decrypt(color.getContent());
+            Decrypt decrypt = new Decrypt(color.getContent(), key);
             decrypt.Decode();
-            mes = decrypt.getMes();
+            mes = decrypt.mes.getMes();
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -88,12 +88,12 @@ public class mainService {
      * @Date: 2023/2/27 9:49
      * @Return:
      **/
-    public boolean Encrypt(String message) {
+    public boolean Encrypt(String message,String key) {
         try {
             mes = message;
-            Encrypt encrypt = new Encrypt(mes);
+            Encrypt encrypt = new Encrypt(mes, key);
             encrypt.Encode();
-            color.setContent(encrypt.getBinary());
+            color.setContent(encrypt.mes.getBinary());
             color.setImage();
             return true;
         } catch (Exception e) {
@@ -108,14 +108,14 @@ public class mainService {
      * @Date: 2023/2/27 9:49
      * @Return:
      **/
-    public void LSB_Control(String sel, String cur, String read, String write) {
+    public void LSB_Control(String sel, String cur, String key, String read, String write) {
         if (readPic(read)) {
             load();
             if (sel.equals("r")) {
-                Decrypt();
+                Decrypt(key);
                 System.out.println(mes);
             } else if (sel.equals("w")) {
-                Encrypt(cur);
+                Encrypt(cur,key);
                 if (writePic(write))
                     System.out.println("Encrypt Success");
             } else
