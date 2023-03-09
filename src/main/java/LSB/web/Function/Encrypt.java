@@ -26,6 +26,8 @@ public class Encrypt {
     public void Encode() {
         String base64 = encode_Base64(mes.getMes());
         base64 = Encrypt_AES(base64, mes.getKey());
+        String hex = Encrypt_AES(toHEX(base64.length()), mes.getKey());
+        base64 = hex + base64;
         int[] binary = new int[base64.length() * 8];
         try {
             for (int i = 0; i < base64.length(); i++) {
@@ -101,4 +103,16 @@ public class Encrypt {
         return "";
     }
 
+    /**
+     * @Author: Nick Lee
+     * @Description: dec to hex
+     * @Date: 2023/3/7 22:38
+     * @Return:
+     **/
+    public String toHEX(int s) {
+        StringBuilder sb = new StringBuilder();
+        String hex = Integer.toHexString(s);
+        sb.append(" ".repeat(8 - hex.length()));
+        return sb + hex;
+    }
 }

@@ -46,9 +46,6 @@ public class LSB_Color {
     public void setContent(int[] binary) {
         try {
             System.arraycopy(binary, 0, content, 0, binary.length);
-            for (int i = binary.length; i < content.length; i++) {
-                content[i] = 0;
-            }
         } catch (Exception e) {
             e.printStackTrace();
         }

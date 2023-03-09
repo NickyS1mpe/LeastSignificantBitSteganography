@@ -6,7 +6,12 @@ import LSB.web.Function.LSB_Color;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 /**
  * @ClassName: main
@@ -19,6 +24,8 @@ public class mainService {
     BufferedImage image;
     LSB_Color color;
     String mes;
+    Encrypt encrypt;
+    Decrypt decrypt;
 
     /**
      * @Author: Nick Lee
@@ -55,6 +62,44 @@ public class mainService {
 
     /**
      * @Author: Nick Lee
+     * @Description: read txt docs
+     * @Date: 2023/3/7 22:41
+     * @Return:
+     **/
+    public boolean readTXT(String road) {
+        try {
+            byte[] date = Files.readAllBytes(Paths.get(road));
+            mes = new String(date, StandardCharsets.UTF_8);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    /**
+     * @Author: Nick Lee
+     * @Description: write txt docs
+     * @Date: 2023/3/7 22:41
+     * @Return:
+     **/
+    public boolean writeTXT(String road) {
+        try {
+            File file = new File(road);
+            if (file.createNewFile()) {
+                BufferedWriter bf = new BufferedWriter(new FileWriter(file));
+                bf.write(mes);
+                bf.flush();
+            }
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    /**
+     * @Author: Nick Lee
      * @Description: load class color
      * @Date: 2023/2/27 9:48
      * @Return:
@@ -66,13 +111,24 @@ public class mainService {
 
     /**
      * @Author: Nick Lee
+     * @Description: set picture color
+     * @Date: 2023/3/7 22:39
+     * @Return:
+     **/
+    public void set() {
+        color.setContent(encrypt.mes.getBinary());
+        color.setImage();
+    }
+
+    /**
+     * @Author: Nick Lee
      * @Description: decrypt message
      * @Date: 2023/2/27 9:48
      * @Return:
      **/
     public boolean Decrypt(String key) {
         try {
-            Decrypt decrypt = new Decrypt(color.getContent(), key);
+            decrypt = new Decrypt(color.getContent(), key);
             decrypt.Decode();
             mes = decrypt.mes.getMes();
             return true;
@@ -88,13 +144,10 @@ public class mainService {
      * @Date: 2023/2/27 9:49
      * @Return:
      **/
-    public boolean Encrypt(String message,String key) {
+    public boolean Encrypt(String key) {
         try {
-            mes = message;
-            Encrypt encrypt = new Encrypt(mes, key);
+            encrypt = new Encrypt(mes, key);
             encrypt.Encode();
-            color.setContent(encrypt.mes.getBinary());
-            color.setImage();
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -108,14 +161,16 @@ public class mainService {
      * @Date: 2023/2/27 9:49
      * @Return:
      **/
-    public void LSB_Control(String sel, String cur, String key, String read, String write) {
+    public void LSB_Control(String sel, String key, String read, String write, String readTXT) {
         if (readPic(read)) {
             load();
             if (sel.equals("r")) {
                 Decrypt(key);
                 System.out.println(mes);
             } else if (sel.equals("w")) {
-                Encrypt(cur,key);
+                readTXT(readTXT);
+                Encrypt(key);
+                set();
                 if (writePic(write))
                     System.out.println("Encrypt Success");
             } else
@@ -123,5 +178,4 @@ public class mainService {
         } else
             System.out.println("Loading error");
     }
-
 }

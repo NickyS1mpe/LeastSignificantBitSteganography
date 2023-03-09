@@ -41,7 +41,7 @@ public class Decrypt {
                 if (dec[8 * i + 7] == 1) c |= 0x80;
                 sb.append(c);
             }
-            String message = sb.toString().trim();
+            String message = sb.substring(24, 24 + Integer.parseInt(Decrypt_AES(sb.substring(0, 24), mes.getKey()).trim(), 16));
             message = Decrypt_AES(message, mes.getKey());
             mes.setMes(decode_Base64(message));
         } catch (Exception e) {
@@ -90,4 +90,5 @@ public class Decrypt {
         }
         return "";
     }
+
 }
