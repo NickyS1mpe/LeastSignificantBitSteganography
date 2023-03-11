@@ -9,7 +9,7 @@ package LSB.web.Model;
 public class Mes {
     String mes;
     int[] binary;
-    String key;
+    private String key;
 
     public String getKey() {
         return key;

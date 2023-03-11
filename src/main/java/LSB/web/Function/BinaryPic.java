@@ -47,7 +47,7 @@ public class BinaryPic extends IO {
      * @Date: 2023/3/8 17:52
      * @Return:
      **/
-    public void setContent() {
+    private void setContent() {
         int height = bin.getHeight(), width = bin.getWidth();
         int h = image.getHeight(), w = image.getWidth();
         int[][] content = new int[width][height];
@@ -61,7 +61,7 @@ public class BinaryPic extends IO {
         for (int i = 0; i < h; i++) {
             for (int j = 0; j < w; j++) {
                 if (i < height && j < width) {
-                    int rgb = image.getRGB(j + hr, i + wr);
+                    int rgb = image.getRGB(j + wr, i + hr);
                     rgb = content[j][i] == 1 ? rgb | 0x00000001 : rgb & 0XFFFFFFFE;
                     image.setRGB(j + hr, i + wr, rgb);
                 }
@@ -75,7 +75,7 @@ public class BinaryPic extends IO {
      * @Date: 2023/3/8 17:51
      * @Return:
      **/
-    public boolean trans() {
+    private boolean trans() {
         try {
             int height = image.getHeight(), width = image.getWidth();
             int[][] color = new int[width][height];
@@ -108,7 +108,7 @@ public class BinaryPic extends IO {
      * @Date: 2023/3/8 17:49
      * @Return:
      **/
-    public static int getGray(int[][] gray, int x, int y, int w, int h) {
+    private static int getGray(int[][] gray, int x, int y, int w, int h) {
         int rs = gray[x][y]
                 + (x == 0 ? 255 : gray[x - 1][y])
                 + (x == 0 || y == 0 ? 255 : gray[x - 1][y - 1])
@@ -127,7 +127,7 @@ public class BinaryPic extends IO {
      * @Date: 2023/3/8 17:50
      * @Return:
      **/
-    public boolean getLast() {
+    private boolean getLast() {
         try {
             int height = image.getHeight(), width = image.getWidth();
             for (int i = 0; i < height; i++) {
@@ -152,9 +152,9 @@ public class BinaryPic extends IO {
      * @Date: 2023/3/8 17:50
      * @Return:
      **/
-    public void getBinPic(int threshold, String read, String write) throws IOException {
-        setBin(new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_BYTE_BINARY));
+    public void getBinPic(int threshold, String read, String write) {
         setImage(readPic(read));
+        setBin(new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_BYTE_BINARY));
         setThreshold(threshold);
         trans();
         writePic(bin, write);
@@ -166,7 +166,7 @@ public class BinaryPic extends IO {
      * @Date: 2023/3/8 17:51
      * @Return:
      **/
-    public void setImageBin(String read1, String read2, String write) throws IOException {
+    public void setImageBin(String read1, String read2, String write) {
         setImage(readPic(read1));
         setBin(readPic(read2));
         setContent();
@@ -179,7 +179,7 @@ public class BinaryPic extends IO {
      * @Date: 2023/3/8 17:51
      * @Return:
      **/
-    public void getBinFromImage(String read1, String write) throws IOException {
+    public void getBinFromImage(String read1, String write) {
         setImage(readPic(read1));
         setBin(new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_BYTE_BINARY));
         getLast();

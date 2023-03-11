@@ -21,23 +21,28 @@ public class Perform extends IO {
      * @Date: 2023/3/8 18:02
      * @Return:
      **/
-    public double MSE(String read1, String read2) throws IOException {
-        org = readPic(read1);
-        pos = readPic(read2);
-        int height = org.getHeight(), width = org.getWidth();
-        double MSE, MSE_R = 0, MSE_G = 0, MSE_B = 0;
-        for (int i = 0; i < height; i++) {
-            for (int j = 0; j < width; j++) {
-                Color o = new Color(org.getRGB(j, i)), p = new Color(pos.getRGB(j, i));
-                int o_r = o.getRed(), o_g = o.getGreen(), o_b = o.getBlue();
-                int p_r = p.getRed(), p_g = p.getGreen(), p_b = p.getBlue();
-                MSE_R += Math.pow(o_r - p_r, 2);
-                MSE_G += Math.pow(o_g - p_g, 2);
-                MSE_B += Math.pow(o_b - p_b, 2);
+    public double MSE(String read1, String read2) {
+        try {
+            org = readPic(read1);
+            pos = readPic(read2);
+            int height = org.getHeight(), width = org.getWidth();
+            double MSE, MSE_R = 0, MSE_G = 0, MSE_B = 0;
+            for (int i = 0; i < height; i++) {
+                for (int j = 0; j < width; j++) {
+                    Color o = new Color(org.getRGB(j, i)), p = new Color(pos.getRGB(j, i));
+                    int o_r = o.getRed(), o_g = o.getGreen(), o_b = o.getBlue();
+                    int p_r = p.getRed(), p_g = p.getGreen(), p_b = p.getBlue();
+                    MSE_R += Math.pow(o_r - p_r, 2);
+                    MSE_G += Math.pow(o_g - p_g, 2);
+                    MSE_B += Math.pow(o_b - p_b, 2);
+                }
             }
+            MSE = (MSE_R + MSE_G + MSE_B) / (height * width);
+            return MSE;
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        MSE = (MSE_R + MSE_G + MSE_B) / (height * width);
-        return MSE;
+        return 0;
     }
 
     /**
@@ -46,10 +51,17 @@ public class Perform extends IO {
      * @Date: 2023/3/8 18:03
      * @Return:
      **/
-    public double PSNR(String read1, String read2) throws IOException {
-        double mse = MSE(read1, read2);
-        double max = Math.pow(255, 2);
-        double psnr = Math.log10(max / mse);
-        return 10 * psnr;
+    public double PSNR(String read1, String read2) {
+        try {
+            if (read1.equals(read2))
+                return 0;
+            double mse = MSE(read1, read2);
+            double max = Math.pow(255, 2);
+            double psnr = Math.log10(max / mse);
+            return 10 * psnr;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 }

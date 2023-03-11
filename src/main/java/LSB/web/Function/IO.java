@@ -13,13 +13,34 @@ import java.io.IOException;
  **/
 public class IO {
 
-    public BufferedImage readPic(String road) throws IOException {
-        return ImageIO.read(new File(road));
+    /**
+     * @Author: Nick Lee
+     * @Description: read picture
+     * @Date: 2023/3/10 21:16
+     * @Return:
+     **/
+    public BufferedImage readPic(String road) {
+        try {
+            return ImageIO.read(new File(road));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
-    public void writePic(BufferedImage image, String road) throws IOException {
-        String format = road.substring(road.lastIndexOf(".") + 1);
-        ImageIO.write(image, format, new File(road));
+    /**
+     * @Author: Nick Lee
+     * @Description: write picture
+     * @Date: 2023/3/10 21:16
+     * @Return:
+     **/
+    public void writePic(BufferedImage image, String road) {
+        try {
+            String format = road.substring(road.lastIndexOf(".") + 1);
+            ImageIO.write(image, format, new File(road));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }
