@@ -146,6 +146,15 @@ public class BinaryPic extends IO {
         return false;
     }
 
+    private int RGBtoGray(int rgb) {
+        int blue = rgb - ((rgb >> 8) << 8);
+        rgb >>= 8;
+        int green = rgb - ((rgb >> 8) << 8);
+        rgb >>= 8;
+        int red = rgb - ((rgb >> 8) << 8);
+        return (int) (0.3 * red + 0.59 * green + 0.11 * blue);
+    }
+
     /**
      * @Author: Nick Lee
      * @Description: transform to a binary image

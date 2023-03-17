@@ -9,6 +9,16 @@ package LSB.web.Model;
 public class Mes {
     String mes;
     int[] binary;
+    boolean AES;
+
+    public boolean isAES() {
+        return AES;
+    }
+
+    public void setAES(boolean AES) {
+        this.AES = AES;
+    }
+
     private String key;
 
     public String getKey() {

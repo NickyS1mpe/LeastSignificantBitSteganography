@@ -11,7 +11,7 @@ import java.util.Random;
  * @Author: Nick Lee
  * @Date: Create in 16:47 2023/2/24
  **/
-public class LSB_Image {
+public class LSB_Image extends IO {
     BufferedImage image;
     int[] content, diff;
 
@@ -71,6 +71,7 @@ public class LSB_Image {
      **/
     public void setContent(int[] binary) {
         try {
+            System.out.println((binary.length * 1.0) / (content.length * 1.0));
             System.arraycopy(binary, 0, content, 0, binary.length);
         } catch (Exception e) {
             e.printStackTrace();
@@ -139,12 +140,9 @@ public class LSB_Image {
                 int rgb = image.getRGB(k, i), st = (i * width + k) * 3;
                 if (st >= bigBin.length)
                     break;
-                int blue = rgb - ((rgb >> 8) << 8);
-                rgb >>= 8;
-                int green = rgb - ((rgb >> 8) << 8);
-                rgb >>= 8;
-                int red = rgb - ((rgb >> 8) << 8);
-                rgb >>= 8;
+                int blue = getColors(rgb, "B");
+                int green = getColors(rgb, "G");
+                int red = getColors(rgb, "R");
                 rgb = rgb << 24 | setColor(bigBin[st], red) << 16 |
                         setColor(bigBin[st + 1], green) << 8 |
                         setColor(bigBin[st + 2], blue);
@@ -176,12 +174,9 @@ public class LSB_Image {
                 int rgb = image.getRGB(k, i), st = (i * width + k) * 3, f_blue;
                 if (st >= bigBin.length)
                     break;
-                int blue = rgb - ((rgb >> 8) << 8);
-                rgb >>= 8;
-                int green = rgb - ((rgb >> 8) << 8);
-                rgb >>= 8;
-                int red = rgb - ((rgb >> 8) << 8);
-                rgb >>= 8;
+                int blue = getColors(rgb, "B");
+                int green = getColors(rgb, "G");
+                int red = getColors(rgb, "R");
                 if (!(i == 0 && k == 0)) {
                     int fi = i, fk = k - 1;
                     if (fk == -1) {

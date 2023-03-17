@@ -17,10 +17,11 @@ import java.security.MessageDigest;
 public class StrToBin extends AES {
     Mes mes;
 
-    public StrToBin(String message, String key) {
+    public StrToBin(String message, String key, boolean AES) {
         mes = new Mes();
         mes.setMes(message);
         mes.setKey(key);
+        mes.setAES(AES);
     }
 
     /**
@@ -31,9 +32,11 @@ public class StrToBin extends AES {
      **/
     public void Encode() {
         String base64 = encode_Base64(mes.getMes());
-        base64 = Encrypt_AES(base64, mes.getKey());
-        String hex = Encrypt_AES(toHEX(base64.length()), mes.getKey());
-        base64 = hex + base64;
+        if (mes.isAES()) {
+            base64 = Encrypt_AES(base64, mes.getKey());
+            String hex = Encrypt_AES(toHEX(base64.length()), mes.getKey());
+            base64 = hex + base64;
+        }
         int[] binary = new int[base64.length() * 8];
         try {
             for (int i = 0; i < base64.length(); i++) {
@@ -51,22 +54,6 @@ public class StrToBin extends AES {
             e.printStackTrace();
         }
     }
-
-    /**
-     * @Author: Nick Lee
-     * @Description: MD5
-     * @Date: 2023/2/28 23:31
-     * @Return:
-     **/
-    public void Encrypt_MD5() {
-        try {
-            MessageDigest messageDigest = MessageDigest.getInstance("MD5");
-            byte[] ms = messageDigest.digest((mes + mes.getKey()).getBytes());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
 
     /**
      * @Author: Nick Lee

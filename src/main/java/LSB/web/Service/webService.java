@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
+import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -59,46 +60,57 @@ public class webService {
         return "上传失败！";
     }
 
-    public String encryptMes(String key, String road1, String road2, String road3) {
+    public String encryptMes(String key, String road1, String road2, String road3, String method) {
         BinaryMes ms = new BinaryMes();
+
         //t1->readPic->getBinary
         CompletableFuture<Void> t1 = CompletableFuture.runAsync(() -> {
             LOGGER.info("reading picture...");
             ms.setImage(ms.readPic(road1));
             ms.load();
         });
+
         //t2->encrypt mes
         CompletableFuture<Void> t2 = CompletableFuture.runAsync(() -> {
             LOGGER.info("encrypting mes...");
             ms.readTXT(road3);
-            ms.Encrypt(key);
+            ms.Encrypt(key, true);
         });
+
         //t3->writePic
         CompletableFuture<String> t3 = t1.thenCombine(t2, (__, tf) -> {
             LOGGER.info("writing picture...");
-            ms.set();
-/*
-            ms.set_Diff();//set difference
-*/
+            switch (method) {
+                case "LSB":
+                    ms.set();
+                    break;
+                case "MLSB":
+                    ms.set_mLSB();
+                    break;
+                case "Diff":
+                    ms.set_Diff();//set difference
+                    break;
+            }
             ms.writePic(ms.getImage(), road2);
             return "finish Encrypting";
         });
+
         System.out.println(t3.join());
         LOGGER.info("encrypt successfully");
         return "finish";
     }
 
-    public String decryptMes(String key, String road1, String road2) {
+    public String decryptMes(String key, String road1, String road2, String method) {
         BinaryMes ms = new BinaryMes();
         LOGGER.info("reading picture...");
         ms.setImage(ms.readPic(road1));
         ms.load();
 
         LOGGER.info("decrypting mes...");
-        ms.Decrypt(key);
-/*
-        ms.De_Diff(key);//get difference
-*/
+        if (method.equals("LSB") || method.equals("MLSB"))
+            ms.Decrypt(key, true);
+        else if (method.equals("Diff"))
+            ms.De_Diff(key, true);//get difference
 
         LOGGER.info("writing text...");
         ms.writeTXT(road2);
@@ -177,7 +189,7 @@ public class webService {
                         get_file.setFile_type("txt");
                     get_file.setFile_size(Long.toString(value.length()));
                     files.add(get_file);
-                } else if (value.isDirectory())//如果是文件夹,需要调用递归 ，深度+1
+                } else if (value.isDirectory())
                 {
                     get_file.setFile_name(value.getName());
                     get_file.setFile_type("Directory");
@@ -199,5 +211,9 @@ public class webService {
     public String getTime() {
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         return df.format(new Date());
+    }
+
+    public String main_encrypt(MultipartFile file1, MultipartFile file2, String key, HttpSession session) {
+        return "";
     }
 }

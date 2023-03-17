@@ -4,12 +4,9 @@ import LSB.web.Model.Account;
 import LSB.web.Model.Files;
 import LSB.web.Service.webService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
+import javax.servlet.http.HttpSession;
 import java.util.List;
 
 /**
@@ -19,6 +16,7 @@ import java.util.List;
  * @Date: Create in 16:25 2023/3/7
  **/
 @RestController
+//@CrossOrigin(value = "http://localhost:7070", allowCredentials = "true")
 public class UserController {
 
     @Autowired
@@ -36,8 +34,36 @@ public class UserController {
      * @Date: 2023/3/10 20:40
      * @Return:
      **/
-    @GetMapping(value = "/getFiles/{name}")
+    @GetMapping(value = "/api/getFiles/{name}")
     public List<Files> Files(@PathVariable("name") String name) {
         return webService.FileList(name);
+    }
+
+    @PostMapping(value = "/api/verify")
+    public String Verify(String name, String password, HttpSession session) {
+        Account account = webService.findBy(name);
+        if (account.getPassword().equals(password)) {
+            System.out.println("Login Successfully");
+            System.out.println(session.getId());
+            session.setAttribute("name", name);
+            return "TRUE";
+        }
+        return "FALSE";
+    }
+
+    @PostMapping("/api/set")
+    public String set(HttpSession session) {
+        System.out.println("Login Successfully");
+        System.out.println(session.getId());
+        session.setAttribute("name", "Zhang");
+        return "set";
+    }
+
+    @PostMapping("/api/get")
+    public String get(HttpSession session) {
+        System.out.println("Get info");
+        System.out.println(session.getId());
+        System.out.println(session.getAttribute("name"));
+        return "get";
     }
 }

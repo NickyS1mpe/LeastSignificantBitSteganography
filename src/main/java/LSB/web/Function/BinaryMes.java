@@ -80,6 +80,11 @@ public class BinaryMes extends IO {
      * @Return:
      **/
     public void set() {
+        color.setContent(encrypt.mes.getBinary());
+        color.setImage();
+    }
+
+    public void set_mLSB() {
         color.mLSB_setImage(encrypt.mes.getBinary());
     }
 
@@ -99,9 +104,9 @@ public class BinaryMes extends IO {
      * @Date: 2023/3/12 1:12
      * @Return:
      **/
-    public void De_Diff(String key) {
+    public void De_Diff(String key, boolean AES) {
         try {
-            decrypt = new BinToStr(color.getDiff(), key);
+            decrypt = new BinToStr(color.getDiff(), key, AES);
             decrypt.Decode();
             mes = decrypt.mes.getMes();
         } catch (Exception e) {
@@ -115,9 +120,9 @@ public class BinaryMes extends IO {
      * @Date: 2023/2/27 9:48
      * @Return:
      **/
-    public boolean Decrypt(String key) {
+    public boolean Decrypt(String key, boolean AES) {
         try {
-            decrypt = new BinToStr(color.getContent(), key);
+            decrypt = new BinToStr(color.getContent(), key, AES);
             decrypt.Decode();
             mes = decrypt.mes.getMes();
             return true;
@@ -133,9 +138,9 @@ public class BinaryMes extends IO {
      * @Date: 2023/2/27 9:49
      * @Return:
      **/
-    public boolean Encrypt(String key) {
+    public boolean Encrypt(String key, boolean AES) {
         try {
-            encrypt = new StrToBin(mes, key);
+            encrypt = new StrToBin(mes, key, AES);
             encrypt.Encode();
             return true;
         } catch (Exception e) {

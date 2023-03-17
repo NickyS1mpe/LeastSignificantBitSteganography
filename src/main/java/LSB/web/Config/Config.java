@@ -18,7 +18,8 @@ public class Config extends WebMvcConfigurationSupport {
         registry.addMapping("/**")
                 .allowedOriginPatterns("*")
                 .allowCredentials(true)
-                .allowedMethods("GET", "POST", "DELETE", "PUT");
+                .allowedMethods("GET", "POST", "DELETE", "PUT")
+                .allowedOrigins("http://localhost:7070");
     }
 
     @Override

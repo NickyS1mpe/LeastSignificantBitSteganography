@@ -43,4 +43,20 @@ public class IO {
         }
     }
 
+    public int getColors(int rgb, String target) {
+        int blue = rgb - ((rgb >> 8) << 8);
+        rgb >>= 8;
+        int green = rgb - ((rgb >> 8) << 8);
+        rgb >>= 8;
+        int red = rgb - ((rgb >> 8) << 8);
+        switch (target) {
+            case "R":
+                return red;
+            case "G":
+                return green;
+            case "B":
+                return blue;
+        }
+        return 0;
+    }
 }

@@ -8,6 +8,7 @@ import org.springframework.util.Base64Utils;
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 
 /**
  * @ClassName: AES
@@ -59,6 +60,23 @@ public class AES {
             cipher.init(Cipher.DECRYPT_MODE, secretKeySpec);
             byte[] decrypted = cipher.doFinal(Base64Utils.decodeFromString(mes));
             return new String(decrypted);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * @Author: Nick Lee
+     * @Description: MD5
+     * @Date: 2023/2/28 23:31
+     * @Return:
+     **/
+    public String Encrypt_MD5(String mes, String key) {
+        try {
+            MessageDigest messageDigest = MessageDigest.getInstance("MD5");
+            byte[] ms = messageDigest.digest((mes + key).getBytes());
+            return new String(ms, StandardCharsets.UTF_8);
         } catch (Exception e) {
             e.printStackTrace();
         }

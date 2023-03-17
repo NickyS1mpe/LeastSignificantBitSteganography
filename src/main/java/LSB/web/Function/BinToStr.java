@@ -1,14 +1,10 @@
 package LSB.web.Function;
 
 import LSB.web.Model.Mes;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import org.springframework.util.Base64Utils;
 
-import javax.crypto.Cipher;
-import javax.crypto.spec.SecretKeySpec;
+import javax.swing.*;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 
 /**
  * @ClassName: Decode
@@ -19,10 +15,11 @@ import java.util.Arrays;
 public class BinToStr extends AES {
     Mes mes;
 
-    public BinToStr(int[] dec, String key) {
+    public BinToStr(int[] dec, String key, boolean AES) {
         mes = new Mes();
         mes.setKey(key);
         mes.setBinary(dec);
+        mes.setAES(AES);
     }
 
     /**
@@ -47,8 +44,13 @@ public class BinToStr extends AES {
                 if (dec[8 * i + 7] == 1) c |= 0x80;
                 sb.append(c);
             }
-            String message = sb.substring(24, 24 + Integer.parseInt(Decrypt_AES(sb.substring(0, 24), mes.getKey()).trim(), 16));
-            message = Decrypt_AES(message, mes.getKey());
+            String message = null;
+            if (mes.isAES()) {
+                message = sb.substring(24, 24 + Integer.parseInt(Decrypt_AES(sb.substring(0, 24), mes.getKey()).trim(), 16));
+                message = Decrypt_AES(message, mes.getKey());
+            } else {
+                message = sb.substring(Integer.parseInt(mes.getKey()));
+            }
             mes.setMes(decode_Base64(message));
         } catch (Exception e) {
             e.printStackTrace();
@@ -62,7 +64,7 @@ public class BinToStr extends AES {
      * @Date: 2023/3/1 9:37
      * @Return:
      **/
-    public String decode_Base64(String s) {
+    private String decode_Base64(String s) {
         try {
             byte[] bt = Base64Utils.decodeFromString(s);
             s = new String(bt, StandardCharsets.UTF_8);
