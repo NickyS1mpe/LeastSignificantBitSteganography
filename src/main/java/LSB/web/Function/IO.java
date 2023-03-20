@@ -59,4 +59,27 @@ public class IO {
         }
         return 0;
     }
+
+    public int setRGB(int rgb, int cur, String target) {
+        var blue = getColors(rgb, "B");
+        var green = getColors(rgb, "G");
+        var red = getColors(rgb, "R");
+        switch (target) {
+            case "R":
+                return rgb << 24 | cur << 16 | green << 8 | blue;
+            case "G":
+                return rgb << 24 | red << 16 | cur << 8 | blue;
+            case "B":
+                return rgb << 24 | red << 16 | green << 8 | cur;
+        }
+        return 0;
+    }
+
+    public void createFolder(String road) {
+        File folder = new File(road);
+        if (!folder.exists() && !folder.isDirectory()) {
+            folder.setWritable(true, false);
+            folder.mkdirs();
+        }
+    }
 }

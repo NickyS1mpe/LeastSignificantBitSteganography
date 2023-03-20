@@ -10,6 +10,9 @@ In the edge regions, modify the least significant bits of the pixels based on th
 To decode the message, use the same edge detection algorithm to determine the edge and non-edge regions, and extract the least significant bits from the pixels in the non-edge regions.
 This method can improve the security of the hidden message, as it makes it less noticeable in the smooth areas of the image, while being more resistant to detection in the edge areas of the image.
 
+to smooth: insert 1 bit
+to mid: insert 2bits
+to sharp: insert 4 bits
 
 文字加密：
     先头部填充一个字节的16进制消息长度，再进行base64加密（使可以加密中文字符），再进行aes加密

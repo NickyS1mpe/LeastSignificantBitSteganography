@@ -2,7 +2,6 @@ package LSB.web.Function;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.util.Arrays;
 import java.util.Random;
 
 /**
@@ -26,23 +25,21 @@ public class LSB_Image extends IO {
      * @Date: 2023/3/1 9:39
      * @Return:
      **/
-    public int[] norm_getColor() {
+    public void norm_getColor() {
         try {
             int height = image.getHeight(), width = image.getWidth();
             content = new int[height * width * 3];
             for (int i = 0; i < height; i++) {
                 for (int k = 0; k < width; k++) {
-                    Color c = new Color(image.getRGB(k, i));
-                    content[(i * width + k) * 3] = c.getRed() & 0x1;
-                    content[(i * width + k) * 3 + 1] = c.getGreen() & 0x1;
-                    content[(i * width + k) * 3 + 2] = c.getBlue() & 0x1;
+                    var rgb = image.getRGB(k, i);
+                    content[(i * width + k) * 3] = getColors(rgb, "R") & 0x1;
+                    content[(i * width + k) * 3 + 1] = getColors(rgb, "G") & 0x1;
+                    content[(i * width + k) * 3 + 2] = getColors(rgb, "B") & 0x1;
                 }
             }
-            return content;
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return null;
     }
 
     /**

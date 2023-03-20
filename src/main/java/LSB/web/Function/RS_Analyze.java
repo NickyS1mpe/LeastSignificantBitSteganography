@@ -150,13 +150,13 @@ public class RS_Analyze extends IO {
                 }
             }
         }
-        /*int h = height % 8 == 0 ? height / 8 : height / 8 + 1, w = width % 8 == 0 ? width / 8 : width / 8 + 1;
+        /*int h = height % n == 0 ? height / n : height / n + 1, w = width % n == 0 ? width / n : width / n + 1;
         int[][][] group = new int[h * w][n][n];
         for (int i = 0; i < h; i++) {
             for (int k = 0; k < w; k++) {
                 for (int x = 0; x < n; x++) {
                     for (int y = 0; y < n; y++) {
-                        group[count][x][y] = 8 * k + y > width || 8 * i + x > height ? 0 : getColors(img.getRGB(8 * k + y, 8 * i + x), col);
+                        group[count][x][y] = n * k + y > width || n * i + x > height ? 180 : getColors(img.getRGB(n * k + y, n * i + x), col);
                     }
                 }
                 count++;

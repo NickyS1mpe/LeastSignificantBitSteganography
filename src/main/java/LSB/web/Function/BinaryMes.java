@@ -132,6 +132,18 @@ public class BinaryMes extends IO {
         return false;
     }
 
+    public boolean Decrypt(int[] binary, String key, boolean AES) {
+        try {
+            decrypt = new BinToStr(binary, key, AES);
+            decrypt.Decode();
+            mes = decrypt.mes.getMes();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     /**
      * @Author: Nick Lee
      * @Description: encrypt message
@@ -155,6 +167,10 @@ public class BinaryMes extends IO {
 
     public void setImage(BufferedImage image) {
         this.image = image;
+    }
+
+    public int[] getBin() {
+        return encrypt.mes.getBinary();
     }
 
     /**
