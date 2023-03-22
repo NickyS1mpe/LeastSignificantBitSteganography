@@ -1,9 +1,7 @@
 package LSB.web.Service;
 
 import LSB.web.Controller.UploadController;
-import LSB.web.Function.BinaryMes;
-import LSB.web.Function.BinaryPic;
-import LSB.web.Function.Perform;
+import LSB.web.Function.*;
 import LSB.web.Mapper.UserMapper;
 import LSB.web.Model.Account;
 import LSB.web.Model.Files;
@@ -118,18 +116,51 @@ public class webService {
         return "finish";
     }
 
-    public String encryptPic(String road1, String road2, String road3) {
-        new BinaryPic().setImageBin(road1, road2, road3);
+    public String encryptPic(String key, String road1, String road2, String road3, String method) {
+        BinaryPic bp = new BinaryPic();
+        String type = "encrypt";
+        switch (method) {
+            case "insert":
+                bp.setImageBin(road1, road2, road3);
+                break;
+            case "LSB":
+                bp.LSB(key, road1, road2, road3, type);
+                break;
+            case "MLSB":
+                bp.MLSB(key, road1, road2, road3, type);
+                break;
+            case "Diff":
+                bp.Diff(key, road1, road2, road3, type);
+                break;
+        }
+        LOGGER.info("encrypt successfully");
         return "finish";
     }
 
-    public String decryptPic(String road1, String road2) {
-        new BinaryPic().getBinFromImage(road1, road2);
+    public String decryptPic(String key, String road1, String road2, String method) {
+        BinaryPic bp = new BinaryPic();
+        String type = "decrypt";
+        switch (method) {
+            case "insert":
+                bp.getBinFromImage(road1, road2);
+                break;
+            case "LSB":
+                bp.LSB(key, road1, "", road2, type);
+                break;
+            case "MLSB":
+                bp.MLSB(key, road1, "", road2, type);
+                break;
+            case "Diff":
+                bp.Diff(key, road1, "", road2, type);
+                break;
+        }
+        LOGGER.info("decrypt successfully");
         return "finish";
     }
 
     public String transBin(int threshold, String road1, String road2) {
         new BinaryPic().getBinPic(threshold, road1, road2);
+        LOGGER.info("transform successfully");
         return "finish";
     }
 
@@ -141,6 +172,44 @@ public class webService {
      **/
     public String evaluate(String read1, String read2) {
         return new Perform().MSE(read1, read2) + "|" + new Perform().PSNR(read1, read2);
+    }
+
+    public String RS_Analysis(int n, int ml0, String road) {
+        RS_Analyze rs = new RS_Analyze();
+        rs.judge(n, 0.05, ml0, road);
+        LOGGER.info("analyze successfully");
+        return "finish";
+    }
+
+    public String ea_Analysis(int threshold1, int threshold2, String road1, String road2) {
+        EdgeAdaptive ea = new EdgeAdaptive();
+        ea.find(3, threshold1, threshold2, road1, road2);
+        return "finish";
+    }
+
+    public String ea_Encrypt(int threshold1, int threshold2, String key, String road1, String road2, String road3) {
+        EdgeAdaptive ea = new EdgeAdaptive();
+        BinaryMes ms = new BinaryMes();
+        ms.readTXT(road3);
+        ms.Encrypt(key, true);
+        ea.insert(3, threshold1, threshold2, ms.getBin(), road1, road2);
+        LOGGER.info("encrypt successfully");
+        return "finish";
+    }
+
+    public String ea_Decrypt(String key, String road1, String road2) {
+        EdgeAdaptive ea = new EdgeAdaptive();
+        BinaryMes ms = new BinaryMes();
+        ms.Decrypt(ea.get(3, road1), key, true);
+        ms.writeTXT(road2);
+        LOGGER.info("decrypt successfully");
+        return "finish";
+    }
+
+    public String getGrayImage(String road1, String road2) {
+        BinaryPic bp = new BinaryPic();
+        bp.getGrayPic(road1, road2);
+        return "finish";
     }
 
     public Account findBy(String name) {
@@ -189,8 +258,7 @@ public class webService {
                         get_file.setFile_type("txt");
                     get_file.setFile_size(Long.toString(value.length()));
                     files.add(get_file);
-                } else if (value.isDirectory())
-                {
+                } else if (value.isDirectory()) {
                     get_file.setFile_name(value.getName());
                     get_file.setFile_type("Directory");
                     files.add(get_file);

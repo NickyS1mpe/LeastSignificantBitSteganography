@@ -11,7 +11,7 @@ import java.io.IOException;
  * @Author: Nick Lee
  * @Date: Create in 17:47 2023/3/8
  **/
-public class IO {
+public class IO extends AES{
 
     /**
      * @Author: Nick Lee

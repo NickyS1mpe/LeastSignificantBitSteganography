@@ -49,7 +49,7 @@ public class BinaryPic extends IO {
      **/
     private void setContent() {
         int height = bin.getHeight(), width = bin.getWidth();
-        int h = image.getHeight(), w = image.getWidth();
+        int h = image.getHeight(), w = image.getWidth(), hr = 0, wr = 0;
         int[][] content = new int[width][height];
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
@@ -57,7 +57,10 @@ public class BinaryPic extends IO {
             }
         }
         Random r = new Random();
-        int hr = r.nextInt(h - height - 1), wr = r.nextInt(w - width - 1);//加入随机量，使嵌入位置不固定
+        if (h > height && w > width) {
+            hr = r.nextInt(h - height - 1);
+            wr = r.nextInt(w - width - 1);//加入随机量，使嵌入位置不固定
+        }
         for (int i = 0; i < h; i++) {
             for (int j = 0; j < w; j++) {
                 if (i < height && j < width) {
@@ -147,12 +150,64 @@ public class BinaryPic extends IO {
     }
 
     private int RGBtoGray(int rgb) {
-        int blue = rgb - ((rgb >> 8) << 8);
-        rgb >>= 8;
-        int green = rgb - ((rgb >> 8) << 8);
-        rgb >>= 8;
-        int red = rgb - ((rgb >> 8) << 8);
+        int blue = getColors(rgb, "B"),
+                green = getColors(rgb, "G"),
+                red = getColors(rgb, "R");
         return (int) (0.3 * red + 0.59 * green + 0.11 * blue);
+    }
+
+    public int[] get_bin_Binary(String key, String road) {
+        setBin(readPic(road));
+        int h = bin.getHeight(), w = bin.getWidth();
+        int[] res = new int[48 * 8 + h * w];
+        String head = Encrypt_AES(toHEX(h), key) + Encrypt_AES(toHEX(w), key);
+        for (int i = 0; i < 48; i++) {
+            for (int j = 0; j < 8; j++) {
+                res[8 * i + j] = head.charAt(i) >> j & 0x1;
+            }
+        }
+        for (int i = 0; i < h; i++) {
+            for (int k = 0; k < w; k++) {
+                res[48 * 8 + i * w + k] = bin.getRGB(k, i) & 0x1;
+            }
+        }
+        return res;
+    }
+
+    public void set_bin_Binary(int[] binary, String key, String road) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 48 * 8; i++) {
+            char c = 0;
+            if (binary[8 * i] == 1) c |= 0x1;
+            if (binary[8 * i + 1] == 1) c |= 0x2;
+            if (binary[8 * i + 2] == 1) c |= 0x4;
+            if (binary[8 * i + 3] == 1) c |= 0x8;
+            if (binary[8 * i + 4] == 1) c |= 0x10;
+            if (binary[8 * i + 5] == 1) c |= 0x20;
+            if (binary[8 * i + 6] == 1) c |= 0x40;
+            if (binary[8 * i + 7] == 1) c |= 0x80;
+            sb.append(c);
+        }
+        int h = Integer.parseInt(Decrypt_AES(sb.substring(0, 24), key).trim(), 16),
+                w = Integer.parseInt(Decrypt_AES(sb.substring(24, 48), key).trim(), 16);
+        setBin(new BufferedImage(w, h, BufferedImage.TYPE_BYTE_BINARY));
+        for (int i = 0; i < h; i++) {
+            for (int k = 0; k < w; k++) {
+                if (binary[48 * 8 + i * w + k] == 1) {
+                    bin.setRGB(k, i, new Color(255, 255, 255).getRGB());
+                } else {
+                    bin.setRGB(k, i, new Color(0, 0, 0).getRGB());
+                }
+            }
+        }
+        writePic(bin, road);
+    }
+
+    private String toHEX(int s) {
+        StringBuilder sb = new StringBuilder();
+        String hex = Integer.toHexString(s);
+        sb.append(" ".repeat(8 - hex.length()));
+        return sb + hex;
     }
 
     /**
@@ -193,5 +248,59 @@ public class BinaryPic extends IO {
         setBin(new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_BYTE_BINARY));
         getLast();
         writePic(bin, write);
+    }
+
+    public void LSB(String key, String read1, String read2, String write, String type) {
+        setImage(readPic(read1));
+        LSB_Image color = new LSB_Image(image);
+        color.norm_getColor();
+        if (type.equals("encrypt")) {
+            color.setContent(get_bin_Binary(key, read2));
+            color.setImage();
+            writePic(image, write);
+        } else {
+            set_bin_Binary(color.getContent(), key, write);
+        }
+    }
+
+    public void MLSB(String key, String read1, String read2, String write, String type) {
+        setImage(readPic(read1));
+        LSB_Image color = new LSB_Image(image);
+        color.norm_getColor();
+        if (type.equals("encrypt")) {
+            color.mLSB_setImage(get_bin_Binary(key, read2));
+            writePic(image, write);
+        } else {
+            set_bin_Binary(color.getContent(), key, write);
+        }
+    }
+
+    public void Diff(String key, String read1, String read2, String write, String type) {
+        setImage(readPic(read1));
+        LSB_Image color = new LSB_Image(image);
+        color.norm_getColor();
+        if (type.equals("encrypt")) {
+            color.setDiff_Content(get_bin_Binary(key, read2));
+            writePic(image, write);
+        } else {
+            set_bin_Binary(color.getDiff(), key, write);
+        }
+    }
+
+    public void getGrayPic(String read1, String write) {
+        setImage(readPic(read1));
+        setBin(new BufferedImage(image.getWidth(), image.getHeight(), image.getType()));
+        int h = image.getHeight(), w = image.getWidth();
+        for (int i = 0; i < h; i++) {
+            for (int j = 0; j < w; j++) {
+                int gray = RGBtoGray(image.getRGB(j, i));
+                bin.setRGB(j, i, colorToRGB(255, gray, gray, gray));
+            }
+        }
+        writePic(bin, write);
+    }
+
+    private int colorToRGB(int alpha, int red, int green, int blue) {
+        return alpha << 24 | red << 16 | green << 8 | blue;
     }
 }
