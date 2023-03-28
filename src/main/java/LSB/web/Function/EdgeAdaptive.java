@@ -1,13 +1,16 @@
 package LSB.web.Function;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
 /**
  * @ClassName: EdgeAdaptive
- * @Description: TODO
+ * @Description: 图片平滑度自适应嵌入
  * @Author: Nick Lee
  * @Date: Create in 17:03 2023/3/16
  **/
@@ -24,9 +27,9 @@ public class EdgeAdaptive extends IO {
 
     /**
      * @Author: Nick Lee
-     * @Description: divide into groups
+     * @Description: 分组，默认分为3x3，按行读取
      * @Date: 2023/3/17 20:42
-     * @Return:
+     * @Return: 分组结果
      **/
     private int[][][] getGroup(int n, String col) {
         int height = image.getHeight(), width = image.getWidth(), count = 0;
@@ -47,11 +50,31 @@ public class EdgeAdaptive extends IO {
         return group;
     }
 
+    private int[][][] getGroup_L(int n, String col) {
+        int height = image.getHeight(), width = image.getWidth(), count = 0;
+        int[][][] group = new int[height * width][n][n];
+        for (int i = 0; i < height; i++) {
+            for (int k = 0; k < width; k++) {
+                for (int x = -1; x < 2; x++) {
+                    for (int y = -1; y < 2; y++) {
+                        int rgb;
+                        if (k + y < 0 || i + x < 0 || k + y >= width || i + x >= height) {
+                            rgb = 0;
+                        } else
+                            rgb = getColors(image.getRGB(k + y, i + x), col);
+                        group[i * width + k][1 + x][1 + y] = rgb;
+                    }
+                }
+            }
+        }
+        return group;
+    }
+
     /**
      * @Author: Nick Lee
-     * @Description: analyze groups
+     * @Description: 按组进行平滑度分析，分为三类：平滑，一般锐利和锐利
      * @Date: 2023/3/17 20:42
-     * @Return:
+     * @Return: 分析结果，只记录组号
      **/
     private int[] analyze(int[][][] group, int threshold1, int threshold2) {
         int[] res = new int[group.length];
@@ -77,10 +100,17 @@ public class EdgeAdaptive extends IO {
         return res;
     }
 
+    /**
+     * @Author: Nick Lee
+     * @Description: Sobel平滑度分析
+     * @Date: 2023/3/26 0:48
+     * @Return: 分析结果，只记录组号
+     **/
     private int[] analyze_Sobel(int[][][] group, int threshold1, int threshold2) {
         int[] res = new int[group.length];
         int[][] gx = {{-1, 0, 1}, {-2, 0, 2}, {-1, 0, 1}};
         int[][] gy = {{-1, -2, -1}, {0, 0, 0}, {1, 2, 1}};
+        int count1 = 0, count2 = 0;
         for (int i = 0; i < group.length; i++) {
             int x = 0, y = 0;
             for (int j = 0; j < group[i].length; j++) {
@@ -92,13 +122,22 @@ public class EdgeAdaptive extends IO {
             double magnitude = Math.sqrt(x * x + y * y);
             if (magnitude > threshold1) {
                 res[i] += 2;
+                count2++;
             } else if (magnitude > threshold2) {
                 res[i] += 1;
+                count1++;
             }
         }
+        System.out.println(count1 + "+" + count2);
         return res;
     }
 
+    /**
+     * @Author: Nick Lee
+     * @Description: 按照分析结果对图片R、G、B通道分别进行标亮
+     * @Date: 2023/3/26 0:49
+     * @Return: void
+     **/
     private void highlightImg(int n, int[] res, String col, String road) {
         int height = image.getHeight(), width = image.getWidth(), count = 0;
         int h = height % n == 0 ? height / n : height / n + 1, w = width % n == 0 ? width / n : width / n + 1;
@@ -127,8 +166,37 @@ public class EdgeAdaptive extends IO {
         writePic(image, road);
     }
 
+    private void highlightImg_L(int[] res, String col, String road) {
+        int height = image.getHeight(), width = image.getWidth(), count = 0;
+        BufferedImage ai = new BufferedImage(width, height, image.getType());
+        for (int i = 0; i < height; i++) {
+            for (int k = 0; k < width; k++) {
+                if (res[count] >= 1) {
+                    int gray;
+                    if (res[count] == 1)
+                        gray = new Color(180, 180, 180).getRGB();
+                    else
+                        gray = new Color(255, 255, 255).getRGB();
+                    ai.setRGB(k, i, colorToRGB(0, gray, gray, gray));
+                }
+                count++;
+            }
+        }
+        writePic(ai, road);
+    }
+
+    private int colorToRGB(int alpha, int red, int green, int blue) {
+        return alpha << 24 | red << 16 | green << 8 | blue;
+    }
+
+    /**
+     * @Author: Nick Lee
+     * @Description: 信息嵌入，嵌入G、B通道，R通道记录嵌入信息，根据随机列表list选择是否嵌入
+     * @Date: 2023/3/26 0:50
+     * @Return: void
+     **/
     private void insertMes(int n, int[][] pos, int[] binary, List<Integer> ran) {
-        int height = image.getHeight(), width = image.getWidth(), count = 0, count1 = 0, count2 = 0, count3 = 0;
+        int height = image.getHeight(), width = image.getWidth(), count = 0, count1 = 0, count2 = 0;
         int h = height % n == 0 ? height / n : height / n + 1, w = width % n == 0 ? width / n : width / n + 1;
         var end = false;
         for (int i = 0; i <= h; i++) {
@@ -139,9 +207,9 @@ public class EdgeAdaptive extends IO {
                     break;
                 if (n * k + n <= width && n * i + n <= height) {
                     boolean iG = false, iB = false;
-                    for (int z = 1; z < 3; z++) {
-                        if (pos[z][count] <= 1) {
-                            if (ran.get(count2) == 1) {
+                    if (!(pos[1][count] == 0 && pos[2][count] == 0) || !(pos[1][count] == 2 && pos[2][count] == 2)) {
+                        for (int z = 1; z < 3; z++) {
+                            if (ran.get(count2++) == 1) {
                                 String col = "";
                                 switch (z) {
                                     case 1:
@@ -170,7 +238,6 @@ public class EdgeAdaptive extends IO {
                                     }
                                 }
                             }
-                            count2++;
                         }
                     }
                     int cur, cur1, rgb = image.getRGB(n * k, n * i), rgb1 = image.getRGB(n * k + 1, n * i + 1);
@@ -193,9 +260,123 @@ public class EdgeAdaptive extends IO {
                 }
             }
         }
-        System.out.println();
     }
 
+    private void insertMes_L(int[][] pos, int[] binary, List<Integer> ran) {
+        int height = image.getHeight(), width = image.getWidth(), count1 = 0, count2 = 0;
+        var end = false;
+        for (int i = 0; i < height; i++) {
+            if (end)
+                break;
+            for (int k = 0; k < width; k++) {
+                if (end)
+                    break;
+                boolean sG = false, sB = false, dG = false, dB = false, tG = false, tB = false;
+                if (!(pos[1][i * width + k] == 0 && pos[2][i * width + k] == 0) && !(pos[1][i * width + k] == 2 && pos[2][i * width + k] == 2)) {
+                    if (ran.get(count2++) == 1) {
+                        for (int z = 1; z < 3; z++) {
+                            String col = "";
+                            switch (z) {
+                                case 1:
+                                    col = "G";
+                                    switch (pos[z][i * width + k]) {
+                                        case 0:
+                                            sG = true;
+                                            break;
+                                        case 1:
+                                            dG = true;
+                                            break;
+                                        case 2:
+                                            tG = true;
+                                            break;
+                                    }
+                                    break;
+                                case 2:
+                                    col = "B";
+                                    switch (pos[z][i * width + k]) {
+                                        case 0:
+                                            sB = true;
+                                            break;
+                                        case 1:
+                                            dB = true;
+                                            break;
+                                        case 2:
+                                            tB = true;
+                                            break;
+                                    }
+                                    break;
+                            }
+                            if (count1 >= binary.length) {
+                                end = true;
+                                break;
+                            } else {
+                                int rgb = image.getRGB(k, i), cur = getColors(rgb, col);
+                                if ((col.equals("B") && sB) || (col.equals("G") && sG)) {
+                                    cur = setColor(binary[count1++], cur);
+                                } else if ((col.equals("B") && dB) || (col.equals("G") && dG)) {
+                                    cur = setColor(binary[count1++], cur);
+                                    if (count1 < binary.length && binary[count1++] == 1) {
+                                        cur = (setColor(1, cur >> 1) << 1) | (cur & 0x1);
+                                    } else
+                                        cur = (setColor(0, cur >> 1) << 1) | (cur & 0x1);
+                                } else if ((col.equals("B") && tB) || (col.equals("G") && tG)) {
+                                    cur = setColor(binary[count1++], cur);
+                                    if (count1 < binary.length && binary[count1++] == 1) {
+                                        cur = (setColor(1, cur >> 1) << 1) | (cur & 0x1);
+                                    } else
+                                        cur = (setColor(0, cur >> 1) << 1) | (cur & 0x1);
+                                    if (count1 < binary.length && binary[count1++] == 1) {
+                                        cur = (setColor(1, cur >> 2) << 2) | (cur & 0x3);
+                                    } else
+                                        cur = (setColor(0, cur >> 2) << 2) | (cur & 0x3);
+                                }
+                                image.setRGB(k, i, setRGB(rgb, cur, col));
+                            }
+                        }
+                    }
+                }
+                int rgb = image.getRGB(k, i), cur = getColors(rgb, "R"), fin = 0;
+                if (sG && dB) {
+                    fin |= 0x2;
+                }
+                if (dG && sB) {
+                    fin |= 0x3;
+                }
+                if (dG && dB) {
+                    fin |= 0x7;
+                }
+                if (dG && tB) {
+                    fin |= 0x6;
+                }
+                if (tG && dB) {
+                    fin |= 0x4;
+                }
+                if (tG && sB) {
+                    fin |= 0x5;
+                }
+                if (sG && tB) {
+                    fin |= 0x1;
+                }
+                cur = setColor(fin & 0x1, cur);
+                if (((fin >> 1) & 0x1) == 1) {
+                    cur = (setColor(1, cur >> 1) << 1) | (cur & 0x1);
+                } else
+                    cur = (setColor(0, cur >> 1) << 1) | (cur & 0x1);
+                if (((fin >> 2) & 0x1) == 1) {
+                    cur = (setColor(1, cur >> 2) << 2) | (cur & 0x3);
+                } else
+                    cur = (setColor(0, cur >> 2) << 2) | (cur & 0x3);
+                image.setRGB(k, i, setRGB(rgb, cur, "R"));
+            }
+        }
+    }
+
+    /**
+     * @Author: Nick Lee
+     * @Description: 信息提取
+     * @Date: 2023/3/26 0:51
+     * @Return: 信息结果
+     **/
     private int[] getContent(int n) {
         int height = image.getHeight(), width = image.getWidth(), count1 = 0, count3 = 0, count4 = 0;
         int h = height % n == 0 ? height / n : height / n + 1, w = width % n == 0 ? width / n : width / n + 1;
@@ -234,6 +415,87 @@ public class EdgeAdaptive extends IO {
         return binary;
     }
 
+    private int[] getContent_L(int n) {
+        int height = image.getHeight(), width = image.getWidth(), count1 = 0;
+        int[] binary = new int[height * width * 4 + 1];
+        for (int i = 0; i < height; i++) {
+            for (int k = 0; k < width; k++) {
+                int rgb = image.getRGB(k, i), red = getColors(rgb, "R"), dat = red & 0x7;
+                if (dat == 2) {
+                    String col = "G";
+                    var cur = getColors(rgb, col);
+                    binary[count1++] = cur & 0x1;
+                    col = "B";
+                    cur = getColors(rgb, col);
+                    binary[count1++] = cur & 0x1;
+                    binary[count1++] = (cur >> 1) & 0x1;
+                }
+                if (dat == 3) {
+                    String col = "G";
+                    var cur = getColors(rgb, col);
+                    binary[count1++] = cur & 0x1;
+                    binary[count1++] = (cur >> 1) & 0x1;
+                    col = "B";
+                    cur = getColors(rgb, col);
+                    binary[count1++] = cur & 0x1;
+                }
+                if (dat == 7) {
+                    String col = "G";
+                    var cur = getColors(rgb, col);
+                    binary[count1++] = cur & 0x1;
+                    binary[count1++] = (cur >> 1) & 0x1;
+                    col = "B";
+                    cur = getColors(rgb, col);
+                    binary[count1++] = cur & 0x1;
+                    binary[count1++] = (cur >> 1) & 0x1;
+                }
+                if (dat == 6) {
+                    String col = "G";
+                    var cur = getColors(rgb, col);
+                    binary[count1++] = cur & 0x1;
+                    binary[count1++] = (cur >> 1) & 0x1;
+                    col = "B";
+                    cur = getColors(rgb, col);
+                    binary[count1++] = cur & 0x1;
+                    binary[count1++] = (cur >> 1) & 0x1;
+                    binary[count1++] = (cur >> 2) & 0x1;
+                }
+                if (dat == 4) {
+                    String col = "G";
+                    var cur = getColors(rgb, col);
+                    binary[count1++] = cur & 0x1;
+                    binary[count1++] = (cur >> 1) & 0x1;
+                    binary[count1++] = (cur >> 2) & 0x1;
+                    col = "B";
+                    cur = getColors(rgb, col);
+                    binary[count1++] = cur & 0x1;
+                    binary[count1++] = (cur >> 1) & 0x1;
+                }
+                if (dat == 5) {
+                    String col = "G";
+                    var cur = getColors(rgb, col);
+                    binary[count1++] = cur & 0x1;
+                    binary[count1++] = (cur >> 1) & 0x1;
+                    binary[count1++] = (cur >> 2) & 0x1;
+                    col = "B";
+                    cur = getColors(rgb, col);
+                    binary[count1++] = cur & 0x1;
+                }
+                if (dat == 1) {
+                    String col = "G";
+                    var cur = getColors(rgb, col);
+                    binary[count1++] = cur & 0x1;
+                    col = "B";
+                    cur = getColors(rgb, col);
+                    binary[count1++] = cur & 0x1;
+                    binary[count1++] = (cur >> 1) & 0x1;
+                    binary[count1++] = (cur >> 2) & 0x1;
+                }
+            }
+        }
+        return binary;
+    }
+
     private int setColor(int con, int col) {
         if (con != (col & 0x1)) {
             if (col == 0)
@@ -248,6 +510,12 @@ public class EdgeAdaptive extends IO {
         return col;
     }
 
+    /**
+     * @Author: Nick Lee
+     * @Description: 随机列表生成，按比例随机生成0和1
+     * @Date: 2023/3/26 0:51
+     * @Return: 随机列表
+     **/
     private ArrayList<Integer> generateRandomList(int n, double proportion) {
         ArrayList<Integer> list = new ArrayList<>();
         var random = new Random();
@@ -268,15 +536,35 @@ public class EdgeAdaptive extends IO {
         return list;
     }
 
-    private int countType(int[] mag) {
+    private int countType(int[][] mag) {
         int res = 0;
-        for (int i : mag) {
-            if (i < 2)
-                res++;
+        for (int i = 0; i < mag[1].length; i++) {
+            if (!(mag[1][i] == 0 && mag[2][i] == 0) && !(mag[1][i] == 2 && mag[2][i] == 2))
+                if (mag[1][i] < 1)
+                    res++;
+                else if (mag[1][i] == 1)
+                    res += 2;
+                else
+                    res += 3;
+        }
+        for (int i = 0; i < mag[2].length; i++) {
+            if (!(mag[1][i] == 0 && mag[2][i] == 0) && !(mag[1][i] == 2 && mag[2][i] == 2))
+                if (mag[2][i] < 1)
+                    res++;
+                else if (mag[2][i] == 1)
+                    res += 2;
+                else
+                    res += 3;
         }
         return res;
     }
 
+    /**
+     * @Author: Nick Lee
+     * @Description: 平滑度分析并输入分析结果
+     * @Date: 2023/3/26 0:52
+     * @Return: void
+     **/
     public void find(int n, int threshold1, int threshold2, String road1, String road2) {
         String[] rgb = {"R", "G", "B"};
         String[] r = road1.split("\\\\");
@@ -284,36 +572,49 @@ public class EdgeAdaptive extends IO {
         int[][] res = new int[3][];
         setImage(road1);
         for (int i = 0; i < rgb.length; i++) {
-            int[][][] org = getGroup(n, rgb[i]);
+            int[][][] org = getGroup_L(n, rgb[i]);
             res[i] = analyze_Sobel(org, threshold1, threshold2);
             createFolder(path);
-            highlightImg(n, res[i], rgb[i], path + "\\" + rgb[i] + "_" + r[r.length - 1]);
+            highlightImg_L(res[i], rgb[i], path + "\\" + rgb[i] + "_" + r[r.length - 1]);
         }
     }
 
-    public void insert(int n, int threshold1, int threshold2, int[] binary, String road1, String road2) {
+    /**
+     * @Author: Nick Lee
+     * @Description: 嵌入信息
+     * @Date: 2023/3/26 0:52
+     * @Return: void
+     **/
+    public void insert(int n, int threshold1, int threshold2, int deviation, int[] binary, String road1, String road2) {
         String[] rgb = {"R", "G", "B"};
         int[][] res = new int[3][];
-        int require = binary.length / (n * n) + 1;
+        int require = binary.length + 1;
         setImage(road1);
         for (int i = 1; i < rgb.length; i++) {
-            int[][][] org = getGroup(n, rgb[i]);
+            int[][][] org = getGroup_L(n, rgb[i]);
             res[i] = analyze_Sobel(org, threshold1, threshold2);
         }
-        int G = countType(res[1]) - 1, B = countType(res[2]) - 1;
-        double insertRate = require * 1.0 / (G + B);
-        List<Integer> ranList = generateRandomList(G + B, insertRate);
+        int totalPixel = countType(res), total = Math.min(require + deviation, totalPixel);
+        double insertRate = require * 1.0 / totalPixel;
+        List<Integer> ranList = generateRandomList(total, require * 1.0 / total);
         System.out.println("嵌入率为" + insertRate);
-        insertMes(n, res, binary, ranList);
+        insertMes_L(res, binary, ranList);
         writePic(image, road2);
     }
 
+    /**
+     * @Author: Nick Lee
+     * @Description: 获取信息
+     * @Date: 2023/3/26 0:52
+     * @Return: 信息结果
+     **/
     public int[] get(int n, String road1) {
         setImage(road1);
 //        for (int i = 0; i < 1; i++) {
 //            int[][][] org = getGroup(n, rgb[i]);
 //            res[i] = analyze_Sobel(org, threshold1, threshold2);
 //        }
-        return getContent(n);
+        int[] s = getContent_L(n);
+        return s;
     }
 }

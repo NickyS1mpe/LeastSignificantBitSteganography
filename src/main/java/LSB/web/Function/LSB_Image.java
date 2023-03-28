@@ -1,6 +1,5 @@
 package LSB.web.Function;
 
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.Random;
 
@@ -42,23 +41,6 @@ public class LSB_Image extends IO {
         }
     }
 
-    /**
-     * @Author: Nick Lee
-     * @Description: random
-     * @Date: 2023/3/11 18:31
-     * @Return:
-     **/
-    public int[] rand_getColor(String key) {
-        try {
-            int height = image.getHeight(), width = image.getWidth();
-            content = new int[height * width * 3];
-
-            return content;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
 
     /**
      * @Author: Nick Lee
@@ -68,8 +50,46 @@ public class LSB_Image extends IO {
      **/
     public void setContent(int[] binary) {
         try {
-            System.out.println((binary.length * 1.0) / (content.length * 1.0));
+            System.out.println("嵌入率为" + binary.length * 1.0 / content.length);
             System.arraycopy(binary, 0, content, 0, binary.length);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * @Author: Nick Lee
+     * @Description: random
+     * @Date: 2023/3/11 18:31
+     * @Return:
+     **/
+    public void rand_getColor(String key) {
+        try {
+            int height = image.getHeight(), width = image.getWidth();
+            content = new int[height * width * 3];
+            var list = generateRandomList(content.length, key);
+            int count = 0;
+            String[] cor = {"R", "G", "B"};
+            for (int i = 0; i < height; i++) {
+                for (int k = 0; k < width; k++) {
+                    int rgb = image.getRGB(k, i), tmp = (i * width + k) * 3;
+                    for (int x = 0; x < 3; x++) {
+                        if (list.get(tmp + x) == 1) {
+                            content[count++] = getColors(rgb, cor[x]) & 0x1;
+                        }
+                    }
+                }
+            }
+            for (int i = 0; i < height; i++) {
+                for (int k = 0; k < width; k++) {
+                    int rgb = image.getRGB(k, i), tmp = (i * width + k) * 3;
+                    for (int x = 0; x < 3; x++) {
+                        if (list.get(tmp + x) == 0) {
+                            content[count++] = getColors(rgb, cor[x]) & 0x1;
+                        }
+                    }
+                }
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -81,26 +101,28 @@ public class LSB_Image extends IO {
      * @Date: 2023/3/11 18:30
      * @Return:
      **/
-    public void rand_setContent(int[] binary) {
+    public void rand_setContent(int[] binary, String key) {
         try {
-            System.arraycopy(binary, 0, content, 0, binary.length);
+            System.out.println("嵌入率为" + binary.length * 1.0 / content.length);
+            var list = generateRandomList(content.length, key);
+            int count = 0;
+            for (int i = 0; i < list.size(); i++) {
+                if (list.get(i) == 1)
+                    content[i] = binary[count++];
+                if (count >= binary.length)
+                    break;
+            }
+            if (count < binary.length) {
+                for (int i = 0; i < list.size(); i++) {
+                    if (list.get(i) == 0)
+                        content[i] = binary[count++];
+                    if (count >= binary.length)
+                        break;
+                }
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-
-    /**
-     * @Author: Nick Lee
-     * @Description: RGB transform
-     * @Date: 2023/3/1 9:38
-     * @Return:
-     **/
-    public int changeToRGB(int rgb, int st) {
-        rgb = content[st] == 1 ? rgb | 0x00010000 : rgb & 0XFFFEFFFF;
-        rgb = content[st + 1] == 1 ? rgb | 0x00000100 : rgb & 0XFFFFFEFF;
-        rgb = content[st + 2] == 1 ? rgb | 0x00000001 : rgb & 0XFFFFFFFE;
-        return rgb;
     }
 
     public BufferedImage getImage() {
@@ -117,7 +139,15 @@ public class LSB_Image extends IO {
         int height = image.getHeight(), width = image.getWidth();
         for (int i = 0; i < height; i++) {
             for (int k = 0; k < width; k++) {
-                image.setRGB(k, i, changeToRGB(image.getRGB(k, i), (i * width + k) * 3));
+                int rgb = image.getRGB(k, i), st = (i * width + k) * 3;
+                var blue = getColors(rgb, "B");
+                var green = getColors(rgb, "G");
+                var red = getColors(rgb, "R");
+                red = content[st] == 1 ? red | 0x1 : red & 0xFE;
+                green = content[st + 1] == 1 ? green | 0x1 : green & 0xFE;
+                blue = content[st + 2] == 1 ? blue | 0x1 : blue & 0xFE;
+                rgb = (rgb >> 24) << 24 | red << 16 | green << 8 | blue;
+                image.setRGB(k, i, rgb);
             }
         }
     }
@@ -128,10 +158,17 @@ public class LSB_Image extends IO {
      * @Date: 2023/3/11 21:01
      * @Return:
      **/
-    public void mLSB_setImage(int[] binary) {
+    public void mLSB_setImage(int[] binary, String key, boolean random) {
         int height = image.getHeight(), width = image.getWidth();
-        int[] bigBin = new int[(binary.length / 3 + 1) * 3];
-        System.arraycopy(binary, 0, bigBin, 0, binary.length);
+        int[] bigBin;
+        if (random) {
+            bigBin = new int[height * width * 3];
+            rand_setContent(binary, key);
+            System.arraycopy(content, 0, bigBin, 0, content.length);
+        } else {
+            bigBin = new int[(binary.length / 3 + 1) * 3];
+            System.arraycopy(binary, 0, bigBin, 0, binary.length);
+        }
         for (int i = 0; i < height; i++) {
             for (int k = 0; k < width; k++) {
                 int rgb = image.getRGB(k, i), st = (i * width + k) * 3;
@@ -140,7 +177,7 @@ public class LSB_Image extends IO {
                 int blue = getColors(rgb, "B");
                 int green = getColors(rgb, "G");
                 int red = getColors(rgb, "R");
-                rgb = rgb << 24 | setColor(bigBin[st], red) << 16 |
+                rgb = (rgb >> 24) << 24 | setColor(bigBin[st], red) << 16 |
                         setColor(bigBin[st + 1], green) << 8 |
                         setColor(bigBin[st + 2], blue);
                 image.setRGB(k, i, rgb);
@@ -162,10 +199,34 @@ public class LSB_Image extends IO {
         return col;
     }
 
-    public void setDiff_Content(int[] binary) {
+    public void setDiff_Content(int[] binary, String key, boolean random) {
         int height = image.getHeight(), width = image.getWidth();
-        int[] bigBin = new int[(binary.length / 3 + 1) * 3];
-        System.arraycopy(binary, 0, bigBin, 0, binary.length);
+        int[] bigBin;
+        if (random) {
+            bigBin = new int[height * width * 3];
+            int[] diff = getDiff(null, false);
+            var list = generateRandomList(diff.length, key);
+            int count = 0;
+            for (int i = 0; i < list.size(); i++) {
+                if (list.get(i) == 1)
+                    diff[i] = binary[count++];
+                if (count >= binary.length)
+                    break;
+            }
+            if (count < binary.length) {
+                for (int i = 0; i < list.size(); i++) {
+                    if (list.get(i) == 0)
+                        diff[i] = binary[count++];
+                    if (count >= binary.length)
+                        break;
+                }
+            }
+            System.out.println("嵌入率为" + binary.length * 1.0 / content.length);
+            System.arraycopy(diff, 0, bigBin, 0, diff.length);
+        } else {
+            bigBin = new int[(binary.length / 3 + 1) * 3];
+            System.arraycopy(binary, 0, bigBin, 0, binary.length);
+        }
         for (int i = 0; i < height; i++) {
             for (int k = 0; k < width; k++) {
                 int rgb = image.getRGB(k, i), st = (i * width + k) * 3, f_blue;
@@ -206,13 +267,27 @@ public class LSB_Image extends IO {
         return col2;
     }
 
-    public int[] getDiff() {
+    public int[] getDiff(String key, boolean random) {
         diff = new int[content.length - 1];
         for (int i = 0; i < content.length - 1; i++) {
             if (i == 0)
                 diff[i] = content[i];
             else
                 diff[i] = Math.abs(content[i] - content[i - 1]);
+        }
+        if (random) {
+            var list = generateRandomList(diff.length, key);
+            int count = 0;
+            int[] bin = new int[diff.length];
+            for (int i = 0; i < diff.length; i++) {
+                if (list.get(i) == 1)
+                    bin[count++] = diff[i];
+            }
+            for (int i = 0; i < diff.length; i++) {
+                if (list.get(i) == 0)
+                    bin[count++] = diff[i];
+            }
+            return bin;
         }
         return diff;
     }

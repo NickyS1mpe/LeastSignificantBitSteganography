@@ -2,7 +2,7 @@ package LSB.web.Controller;
 
 import LSB.web.Model.Account;
 import LSB.web.Model.Files;
-import LSB.web.Service.webService;
+import LSB.web.Service.mainService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,7 +20,7 @@ import java.util.List;
 public class UserController {
 
     @Autowired
-    webService webService;
+    mainService webService;
 
     @GetMapping("/api/account/{name}")
     @ResponseBody

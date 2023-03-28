@@ -3,7 +3,6 @@ package LSB.web.Function;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 
 /**
  * @ClassName: IO
@@ -11,7 +10,7 @@ import java.io.IOException;
  * @Author: Nick Lee
  * @Date: Create in 17:47 2023/3/8
  **/
-public class IO extends AES{
+public class IO extends Crypto {
 
     /**
      * @Author: Nick Lee
@@ -66,11 +65,11 @@ public class IO extends AES{
         var red = getColors(rgb, "R");
         switch (target) {
             case "R":
-                return rgb << 24 | cur << 16 | green << 8 | blue;
+                return (rgb >> 24) << 24 | cur << 16 | green << 8 | blue;
             case "G":
-                return rgb << 24 | red << 16 | cur << 8 | blue;
+                return (rgb >> 24) << 24 | red << 16 | cur << 8 | blue;
             case "B":
-                return rgb << 24 | red << 16 | green << 8 | cur;
+                return (rgb >> 24) << 24 | red << 16 | green << 8 | cur;
         }
         return 0;
     }

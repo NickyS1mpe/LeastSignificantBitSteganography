@@ -9,17 +9,27 @@ import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 /**
- * @ClassName: AES
- * @Description: aes decrypt and encrypt
+ * @ClassName: Crypto
+ * @Description: 密码类，AES加解密和随机列表生成
  * @Author: Nick Lee
  * @Date: Create in 18:03 2023/3/11
  **/
-public class AES {
+public class Crypto {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UploadController.class);
 
+    /**
+     * @Author: Nick Lee
+     * @Description: AES加密
+     * @Date: 2023/3/26 0:44
+     * @Return: 加密结果
+     **/
     public String Encrypt_AES(String mes, String key) {
         if (key == null || mes == null) {
             LOGGER.info("encrypt error");
@@ -43,6 +53,12 @@ public class AES {
         return null;
     }
 
+    /**
+     * @Author: Nick Lee
+     * @Description: AES解密
+     * @Date: 2023/3/26 0:44
+     * @Return: 解密结果
+     **/
     public String Decrypt_AES(String mes, String key) {
         if (key == null || mes == null) {
             LOGGER.info("decrypt error");
@@ -68,18 +84,39 @@ public class AES {
 
     /**
      * @Author: Nick Lee
-     * @Description: MD5
-     * @Date: 2023/2/28 23:31
-     * @Return:
+     * @Description: 伪随机列表生成，只包含0和1
+     * @Date: 2023/3/25 1:41
+     * @Return: 伪随机列表
      **/
-    public String Encrypt_MD5(String mes, String key) {
+    public static List<Integer> generateRandomList(int length, String key) {
+        List<Integer> bitList = new ArrayList<>();
+        byte[] keyBytes = key.getBytes(StandardCharsets.UTF_8);
+        MessageDigest md;
         try {
-            MessageDigest messageDigest = MessageDigest.getInstance("MD5");
-            byte[] ms = messageDigest.digest((mes + key).getBytes());
-            return new String(ms, StandardCharsets.UTF_8);
-        } catch (Exception e) {
-            e.printStackTrace();
+            md = MessageDigest.getInstance("SHA-256");
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("SHA-256 algorithm not found", e);
         }
-        return null;
+        byte[] digest = md.digest(keyBytes);
+        Random random = new Random(toInt(digest));
+        for (int i = 0; i < length; i++) {
+            int bit = random.nextInt(2);
+            bitList.add(bit);
+        }
+        return bitList;
+    }
+
+    /**
+     * @Author: Nick Lee
+     * @Description: 字符流转换为整形
+     * @Date: 2023/3/26 0:45
+     * @Return: 转换结果
+     **/
+    private static int toInt(byte[] bytes) {
+        int result = 0;
+        for (int i = 0; i < bytes.length; i++) {
+            result += (bytes[i] & 0xff) << (8 * i);
+        }
+        return result;
     }
 }

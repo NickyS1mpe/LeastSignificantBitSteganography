@@ -1,6 +1,6 @@
 package LSB.web.Controller;
 
-import LSB.web.Service.webService;
+import LSB.web.Service.mainService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,7 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Controller
 public class UploadController {
     @Autowired
-    webService webService;
+    mainService webService;
 
     @PostMapping(value = "/upload", produces = {"application/json;charset=UTF-8"})
     @ResponseBody

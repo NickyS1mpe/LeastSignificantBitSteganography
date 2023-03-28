@@ -29,9 +29,9 @@ import java.util.concurrent.CompletableFuture;
  * @Author: Nick Lee
  * @Date: Create in 16:29 2023/3/6
  **/
-@Service
+@org.springframework.stereotype.Service
 @Transactional(rollbackOn = RuntimeException.class)
-public class webService {
+public class mainService {
     private static final Logger LOGGER = LoggerFactory.getLogger(UploadController.class);
 
     @Autowired
@@ -58,14 +58,14 @@ public class webService {
         return "上传失败！";
     }
 
-    public String encryptMes(String key, String road1, String road2, String road3, String method) {
+    public String encryptMes(String key, String road1, String road2, String road3, String method, boolean random) {
         BinaryMes ms = new BinaryMes();
 
         //t1->readPic->getBinary
         CompletableFuture<Void> t1 = CompletableFuture.runAsync(() -> {
             LOGGER.info("reading picture...");
             ms.setImage(ms.readPic(road1));
-            ms.load();
+            ms.load(null, false);
         });
 
         //t2->encrypt mes
@@ -80,13 +80,13 @@ public class webService {
             LOGGER.info("writing picture...");
             switch (method) {
                 case "LSB":
-                    ms.set();
+                    ms.set(key, random);
                     break;
                 case "MLSB":
-                    ms.set_mLSB();
+                    ms.set_mLSB(key, random);
                     break;
                 case "Diff":
-                    ms.set_Diff();//set difference
+                    ms.set_Diff(key, random);//set difference
                     break;
             }
             ms.writePic(ms.getImage(), road2);
@@ -98,17 +98,19 @@ public class webService {
         return "finish";
     }
 
-    public String decryptMes(String key, String road1, String road2, String method) {
+    public String decryptMes(String key, String road1, String road2, String method, boolean random) {
         BinaryMes ms = new BinaryMes();
         LOGGER.info("reading picture...");
         ms.setImage(ms.readPic(road1));
-        ms.load();
 
         LOGGER.info("decrypting mes...");
-        if (method.equals("LSB") || method.equals("MLSB"))
+        if (method.equals("LSB") || method.equals("MLSB")) {
+            ms.load(key, random);
             ms.Decrypt(key, true);
-        else if (method.equals("Diff"))
-            ms.De_Diff(key, true);//get difference
+        } else if (method.equals("Diff")) {
+            ms.load(null, false);
+            ms.De_Diff(key, true, random);//get difference
+        }
 
         LOGGER.info("writing text...");
         ms.writeTXT(road2);
@@ -116,7 +118,7 @@ public class webService {
         return "finish";
     }
 
-    public String encryptPic(String key, String road1, String road2, String road3, String method) {
+    public String encryptPic(String key, String road1, String road2, String road3, String method, boolean random) {
         BinaryPic bp = new BinaryPic();
         String type = "encrypt";
         switch (method) {
@@ -124,20 +126,20 @@ public class webService {
                 bp.setImageBin(road1, road2, road3);
                 break;
             case "LSB":
-                bp.LSB(key, road1, road2, road3, type);
+                bp.LSB(key, road1, road2, road3, type, random);
                 break;
             case "MLSB":
-                bp.MLSB(key, road1, road2, road3, type);
+                bp.MLSB(key, road1, road2, road3, type, random);
                 break;
             case "Diff":
-                bp.Diff(key, road1, road2, road3, type);
+                bp.Diff(key, road1, road2, road3, type, random);
                 break;
         }
         LOGGER.info("encrypt successfully");
         return "finish";
     }
 
-    public String decryptPic(String key, String road1, String road2, String method) {
+    public String decryptPic(String key, String road1, String road2, String method, boolean random) {
         BinaryPic bp = new BinaryPic();
         String type = "decrypt";
         switch (method) {
@@ -145,13 +147,13 @@ public class webService {
                 bp.getBinFromImage(road1, road2);
                 break;
             case "LSB":
-                bp.LSB(key, road1, "", road2, type);
+                bp.LSB(key, road1, "", road2, type, random);
                 break;
             case "MLSB":
-                bp.MLSB(key, road1, "", road2, type);
+                bp.MLSB(key, road1, "", road2, type, random);
                 break;
             case "Diff":
-                bp.Diff(key, road1, "", road2, type);
+                bp.Diff(key, road1, "", road2, type, random);
                 break;
         }
         LOGGER.info("decrypt successfully");
@@ -174,6 +176,10 @@ public class webService {
         return new Perform().MSE(read1, read2) + "|" + new Perform().PSNR(read1, read2);
     }
 
+    public void compare(String read1, String read2, String write) {
+        new Perform().compare(read1, read2, write);
+    }
+
     public String RS_Analysis(int n, int ml0, String road) {
         RS_Analyze rs = new RS_Analyze();
         rs.judge(n, 0.05, ml0, road);
@@ -187,12 +193,12 @@ public class webService {
         return "finish";
     }
 
-    public String ea_Encrypt(int threshold1, int threshold2, String key, String road1, String road2, String road3) {
+    public String ea_Encrypt(int threshold1, int threshold2, int deviation, String key, String road1, String road2, String road3) {
         EdgeAdaptive ea = new EdgeAdaptive();
         BinaryMes ms = new BinaryMes();
         ms.readTXT(road3);
         ms.Encrypt(key, true);
-        ea.insert(3, threshold1, threshold2, ms.getBin(), road1, road2);
+        ea.insert(3, threshold1, threshold2, deviation, ms.getBin(), road1, road2);
         LOGGER.info("encrypt successfully");
         return "finish";
     }

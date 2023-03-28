@@ -1,10 +1,7 @@
 package LSB.web.Function;
 
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.util.Random;
 
 /**
@@ -43,9 +40,9 @@ public class BinaryPic extends IO {
 
     /**
      * @Author: Nick Lee
-     * @Description: change the last bit of an image to put in a binary image
+     * @Description: 二值图像嵌入
      * @Date: 2023/3/8 17:52
-     * @Return:
+     * @Return: void
      **/
     private void setContent() {
         int height = bin.getHeight(), width = bin.getWidth();
@@ -74,42 +71,38 @@ public class BinaryPic extends IO {
 
     /**
      * @Author: Nick Lee
-     * @Description: set binary image
+     * @Description: RGB图像根据阈值进行二值图像转换
      * @Date: 2023/3/8 17:51
-     * @Return:
+     * @Return: void
      **/
-    private boolean trans() {
+    private void trans() {
         try {
             int height = image.getHeight(), width = image.getWidth();
             int[][] color = new int[width][height];
             for (int i = 0; i < height; i++) {
                 for (int j = 0; j < width; j++) {
-                    Color c = new Color(image.getRGB(j, i));
-                    int r = c.getRed(), b = c.getBlue(), g = c.getGreen();
-                    color[j][i] = (r + g + b) / 3;
+                    color[j][i] = RGBtoGray(image.getRGB(j, i));
                 }
             }
             for (int i = 0; i < height; i++) {
                 for (int j = 0; j < width; j++) {
-                    if (getGray(color, j, i, width, height) > threshold) {
+                    if (analyze_Sobel(color, j, i, width, height) > threshold) {
                         bin.setRGB(j, i, new Color(255, 255, 255).getRGB());
                     } else {
                         bin.setRGB(j, i, new Color(0, 0, 0).getRGB());
                     }
                 }
             }
-            return true;
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return false;
     }
 
     /**
      * @Author: Nick Lee
-     * @Description: get average degree of grayness
+     * @Description: 获取平均灰度值
      * @Date: 2023/3/8 17:49
-     * @Return:
+     * @Return: 灰度值
      **/
     private static int getGray(int[][] gray, int x, int y, int w, int h) {
         int rs = gray[x][y]
@@ -124,13 +117,27 @@ public class BinaryPic extends IO {
         return rs / 9;
     }
 
+    private double analyze_Sobel(int[][] group, int x, int y, int w, int h) {
+        int[][] gx = {{-1, 0, 1}, {-2, 0, 2}, {-1, 0, 1}};
+        int[][] gy = {{-1, -2, -1}, {0, 0, 0}, {1, 2, 1}};
+        int n = 0, m = 0;
+        for (int j = 0; j < 3; j++) {
+            for (int k = 0; k < 3; k++) {
+                int val = x + j >= w || y + k >= h ? 0 : group[x + j][y + k];
+                n += val * gx[j][k];
+                m += val * gy[j][k];
+            }
+        }
+        return Math.sqrt(n * n + m * m);
+    }
+
     /**
      * @Author: Nick Lee
-     * @Description: get the last bit of image
+     * @Description: 最低位提取
      * @Date: 2023/3/8 17:50
-     * @Return:
+     * @Return: void
      **/
-    private boolean getLast() {
+    private void getLast() {
         try {
             int height = image.getHeight(), width = image.getWidth();
             for (int i = 0; i < height; i++) {
@@ -142,13 +149,17 @@ public class BinaryPic extends IO {
                     }
                 }
             }
-            return true;
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return false;
     }
 
+    /**
+     * @Author: Nick Lee
+     * @Description: RGB转换为灰度值
+     * @Date: 2023/3/26 0:56
+     * @Return: 灰度值
+     **/
     private int RGBtoGray(int rgb) {
         int blue = getColors(rgb, "B"),
                 green = getColors(rgb, "G"),
@@ -156,6 +167,12 @@ public class BinaryPic extends IO {
         return (int) (0.3 * red + 0.59 * green + 0.11 * blue);
     }
 
+    /**
+     * @Author: Nick Lee
+     * @Description: 获取二值图像的数据流
+     * @Date: 2023/3/26 0:57
+     * @Return: 数据流
+     **/
     public int[] get_bin_Binary(String key, String road) {
         setBin(readPic(road));
         int h = bin.getHeight(), w = bin.getWidth();
@@ -174,6 +191,12 @@ public class BinaryPic extends IO {
         return res;
     }
 
+    /**
+     * @Author: Nick Lee
+     * @Description: 从数据流中获取二值图像
+     * @Date: 2023/3/26 0:57
+     * @Return: void
+     **/
     public void set_bin_Binary(int[] binary, String key, String road) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < 48 * 8; i++) {
@@ -212,9 +235,9 @@ public class BinaryPic extends IO {
 
     /**
      * @Author: Nick Lee
-     * @Description: transform to a binary image
+     * @Description: 获取二值图像
      * @Date: 2023/3/8 17:50
-     * @Return:
+     * @Return: void
      **/
     public void getBinPic(int threshold, String read, String write) {
         setImage(readPic(read));
@@ -226,9 +249,9 @@ public class BinaryPic extends IO {
 
     /**
      * @Author: Nick Lee
-     * @Description: put a binary image into another image
+     * @Description: 将二值图像直接隐藏于载体中
      * @Date: 2023/3/8 17:51
-     * @Return:
+     * @Return: void
      **/
     public void setImageBin(String read1, String read2, String write) {
         setImage(readPic(read1));
@@ -239,9 +262,9 @@ public class BinaryPic extends IO {
 
     /**
      * @Author: Nick Lee
-     * @Description: get a binary image form another image
+     * @Description: 从载体获取二值图像
      * @Date: 2023/3/8 17:51
-     * @Return:
+     * @Return: void
      **/
     public void getBinFromImage(String read1, String write) {
         setImage(readPic(read1));
@@ -250,12 +273,24 @@ public class BinaryPic extends IO {
         writePic(bin, write);
     }
 
-    public void LSB(String key, String read1, String read2, String write, String type) {
+    /**
+     * @Author: Nick Lee
+     * @Description: 将二值图像采用LSB隐藏于载体中
+     * @Date: 2023/3/26 0:59
+     * @Return: void
+     **/
+    public void LSB(String key, String read1, String read2, String write, String type, boolean random) {
         setImage(readPic(read1));
         LSB_Image color = new LSB_Image(image);
-        color.norm_getColor();
+        if (random)
+            color.rand_getColor(key);
+        else
+            color.norm_getColor();
         if (type.equals("encrypt")) {
-            color.setContent(get_bin_Binary(key, read2));
+            if (random)
+                color.rand_setContent(get_bin_Binary(key, read2), key);
+            else
+                color.setContent(get_bin_Binary(key, read2));
             color.setImage();
             writePic(image, write);
         } else {
@@ -263,30 +298,51 @@ public class BinaryPic extends IO {
         }
     }
 
-    public void MLSB(String key, String read1, String read2, String write, String type) {
+    /**
+     * @Author: Nick Lee
+     * @Description: 将二值图像采用MLSB隐藏于载体中
+     * @Date: 2023/3/26 0:59
+     * @Return: void
+     **/
+    public void MLSB(String key, String read1, String read2, String write, String type, boolean random) {
         setImage(readPic(read1));
         LSB_Image color = new LSB_Image(image);
-        color.norm_getColor();
+        if (random)
+            color.rand_getColor(key);
+        else
+            color.norm_getColor();
         if (type.equals("encrypt")) {
-            color.mLSB_setImage(get_bin_Binary(key, read2));
+            color.mLSB_setImage(get_bin_Binary(key, read2), key, random);
             writePic(image, write);
         } else {
             set_bin_Binary(color.getContent(), key, write);
         }
     }
 
-    public void Diff(String key, String read1, String read2, String write, String type) {
+    /**
+     * @Author: Nick Lee
+     * @Description: 将二值图像采用差分嵌入隐藏于载体中
+     * @Date: 2023/3/26 0:59
+     * @Return: void
+     **/
+    public void Diff(String key, String read1, String read2, String write, String type, boolean random) {
         setImage(readPic(read1));
         LSB_Image color = new LSB_Image(image);
         color.norm_getColor();
         if (type.equals("encrypt")) {
-            color.setDiff_Content(get_bin_Binary(key, read2));
+            color.setDiff_Content(get_bin_Binary(key, read2), key, random);
             writePic(image, write);
         } else {
-            set_bin_Binary(color.getDiff(), key, write);
+            set_bin_Binary(color.getDiff(key, random), key, write);
         }
     }
 
+    /**
+     * @Author: Nick Lee
+     * @Description: 获取灰度图
+     * @Date: 2023/3/26 1:00
+     * @Return: void
+     **/
     public void getGrayPic(String read1, String write) {
         setImage(readPic(read1));
         setBin(new BufferedImage(image.getWidth(), image.getHeight(), image.getType()));

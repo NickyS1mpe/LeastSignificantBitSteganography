@@ -1,7 +1,7 @@
 package LSB.web.Controller;
 
 import LSB.web.Model.Preview;
-import LSB.web.Service.webService;
+import LSB.web.Service.mainService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -17,7 +17,7 @@ import javax.servlet.http.HttpServletResponse;
 @Controller
 public class DownloadController {
     @Autowired
-    webService webService;
+    mainService webService;
 
     /**
      * @Author: Nick Lee

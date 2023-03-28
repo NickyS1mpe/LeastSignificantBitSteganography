@@ -17,7 +17,7 @@ public class Perform extends IO {
 
     /**
      * @Author: Nick Lee
-     * @Description: Mean Square Error
+     * @Description: Mean Square Error，MSE分析
      * @Date: 2023/3/8 18:02
      * @Return:
      **/
@@ -47,7 +47,7 @@ public class Perform extends IO {
 
     /**
      * @Author: Nick Lee
-     * @Description: Peak Signal to Noise Ration
+     * @Description: Peak Signal to Noise Ration，PSNR分析
      * @Date: 2023/3/8 18:03
      * @Return:
      **/
@@ -63,5 +63,25 @@ public class Perform extends IO {
             e.printStackTrace();
         }
         return 0;
+    }
+
+    public void compare(String read1, String read2, String write) {
+        try {
+            org = readPic(read1);
+            pos = readPic(read2);
+            BufferedImage com = new BufferedImage(org.getWidth(), org.getHeight(), BufferedImage.TYPE_BYTE_BINARY);
+            for (int j = 0; j < org.getHeight(); j++) {
+                for (int k = 0; k < org.getWidth(); k++) {
+                    if (org.getRGB(k, j) != pos.getRGB(k, j)) {
+                        com.setRGB(k, j, new Color(255, 255, 255).getRGB());
+                    } else {
+                        com.setRGB(k, j, new Color(0, 0, 0).getRGB());
+                    }
+                }
+            }
+            writePic(com, write);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -1,10 +1,6 @@
 package LSB.web;
 
-import LSB.web.Function.BinaryMes;
-import LSB.web.Function.BinaryPic;
-import LSB.web.Function.EdgeAdaptive;
-import LSB.web.Function.RS_Analyze;
-import LSB.web.Service.webService;
+import LSB.web.Service.mainService;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -21,26 +17,29 @@ public class usage_test {
     void testLSB() {
         try {
             String key = "asdfghjklzxcvbnm";
+            String key1 = "qwertyuiopzxcvbn";
             String road1 = "C:\\Users\\Nick Lee\\IdeaProjects\\LSB\\src\\main\\resources\\upload\\Ming\\pic\\house.png",
-                    road2 = "C:\\Users\\Nick Lee\\IdeaProjects\\LSB\\src\\main\\resources\\upload\\Ming\\resPic\\BIN_houseR.png",
-                    road3 = "C:\\Users\\Nick Lee\\IdeaProjects\\LSB\\src\\main\\resources\\upload\\Ming\\txt\\news.TXT",
-                    road4 = "C:\\Users\\Nick Lee\\IdeaProjects\\LSB\\src\\main\\resources\\upload\\Ming\\resTXT\\houseTS1.TXT",
-                    road5 = "C:\\Users\\Nick Lee\\IdeaProjects\\LSB\\src\\main\\resources\\upload\\Ming\\resPic\\testBIN1.png",
-                    road6 = "C:\\Users\\Nick Lee\\IdeaProjects\\LSB\\src\\main\\resources\\upload\\Ming\\resPic\\testBINx.png";
+                    road2 = "C:\\Users\\Nick Lee\\IdeaProjects\\LSB\\src\\main\\resources\\upload\\Ming\\resPic\\hT.png",
+                    road3 = "C:\\Users\\Nick Lee\\IdeaProjects\\LSB\\src\\main\\resources\\upload\\Ming\\txt\\CNmes.TXT",
+                    road4 = "C:\\Users\\Nick Lee\\IdeaProjects\\LSB\\src\\main\\resources\\upload\\Ming\\resTXT\\houseTS12.TXT",
+                    road5 = "C:\\Users\\Nick Lee\\IdeaProjects\\LSB\\src\\main\\resources\\upload\\Ming\\resPic\\testBINs.png",
+                    road6 = "C:\\Users\\Nick Lee\\IdeaProjects\\LSB\\src\\main\\resources\\upload\\Ming\\resPic\\testBINd.png";
 //            new mainService().LSB_Control("r", key, "C:\\Users\\Nick Lee\\IdeaProjects\\LSB\\src\\main\\resources\\static\\read_TXT.png", "C:\\Users\\Nick Lee\\IdeaProjects\\LSB\\src\\main\\resources\\static\\read_TXT.png", "C:\\Users\\Nick Lee\\IdeaProjects\\LSB\\src\\main\\resources\\static\\testMES.TXT");
-//            new webService().encryptMes(key, road1, road2, road3, "MLSB");
-//            new webService().decryptMes(key, road2, road4, "MLSB");
+//            new mainService().encryptMes(key1, road1, road2, road3, "MLSB", false);
+//            new mainService().decryptMes(key1, road2, road4, "Diff", true);
 
-//            new webService().transBin(180, road1, road2);
-//            new webService().encryptPic(road1, road2, road5);
-//            new webService().decryptPic(road5, road2);
-//            new webService().ea_Encrypt(60, 20, key, road1, road2, road3);
-//            new webService().ea_Decrypt(key, road2, road4);
-//            System.out.println(new webService().evaluate(road1, road2));
-//            new webService().transBin(180, road1, road2);
-//            new webService().decryptPic(road5, road2);
-//            new webService().encryptPic(key, road1, road2, road5, "Diff");
-//            new webService().decryptPic(key, road5, road6, "Diff");
+//            new mainService().transBin(180, road1, road2);
+//            new mainService().encryptPic(key, road1, road2, road5, "Diff", true);
+//            new mainService().decryptPic(key, road5, road2, "Diff", true);
+            new mainService().ea_Encrypt(60, 40, 128, key, road1, road2, road3);
+//            new mainService().ea_Decrypt(key, road2, road4);
+//            new mainService().transBin(60, road1, road2);
+//            new mainService().decryptPic(road5, road2);
+//            new mainService().encryptPic(key, road1, road2, road5, "Diff");
+//            new mainService().decryptPic(key, road5, road6, "Diff");
+//            new mainService().ea_Analysis(60, 40, road1, road2);
+//            new mainService().compare(road1, road2, road6);
+            System.out.println(new mainService().evaluate(road1, road2));
         } catch (Exception e) {
             e.printStackTrace();
         }
